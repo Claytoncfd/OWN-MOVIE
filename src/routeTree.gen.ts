@@ -10,11 +10,47 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentesRouteImport } from './routes/agentes'
+import { Route as ArquivosRouteImport } from './routes/arquivos'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ModelosRouteImport } from './routes/modelos'
+import { Route as OmnivoiceRouteImport } from './routes/omnivoice'
 import { Route as ProjetosRouteImport } from './routes/projetos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentesRoute = AgentesRouteImport.update({
+  id: '/agentes',
+  path: '/agentes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArquivosRoute = ArquivosRouteImport.update({
+  id: '/arquivos',
+  path: '/arquivos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModelosRoute = ModelosRouteImport.update({
+  id: '/modelos',
+  path: '/modelos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OmnivoiceRoute = OmnivoiceRouteImport.update({
+  id: '/omnivoice',
+  path: '/omnivoice',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjetosRoute = ProjetosRouteImport.update({
@@ -25,27 +61,76 @@ const ProjetosRoute = ProjetosRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agentes': typeof AgentesRoute
+  '/arquivos': typeof ArquivosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
+  '/modelos': typeof ModelosRoute
+  '/omnivoice': typeof OmnivoiceRoute
   '/projetos': typeof ProjetosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agentes': typeof AgentesRoute
+  '/arquivos': typeof ArquivosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
+  '/modelos': typeof ModelosRoute
+  '/omnivoice': typeof OmnivoiceRoute
   '/projetos': typeof ProjetosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agentes': typeof AgentesRoute
+  '/arquivos': typeof ArquivosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
+  '/modelos': typeof ModelosRoute
+  '/omnivoice': typeof OmnivoiceRoute
   '/projetos': typeof ProjetosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/projetos'
+  fullPaths:
+    | '/'
+    | '/agentes'
+    | '/arquivos'
+    | '/configuracoes'
+    | '/dashboard'
+    | '/modelos'
+    | '/omnivoice'
+    | '/projetos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/projetos'
-  id: '__root__' | '/' | '/projetos'
+  to:
+    | '/'
+    | '/agentes'
+    | '/arquivos'
+    | '/configuracoes'
+    | '/dashboard'
+    | '/modelos'
+    | '/omnivoice'
+    | '/projetos'
+  id:
+    | '__root__'
+    | '/'
+    | '/agentes'
+    | '/arquivos'
+    | '/configuracoes'
+    | '/dashboard'
+    | '/modelos'
+    | '/omnivoice'
+    | '/projetos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentesRoute: typeof AgentesRoute
+  ArquivosRoute: typeof ArquivosRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  DashboardRoute: typeof DashboardRoute
+  ModelosRoute: typeof ModelosRoute
+  OmnivoiceRoute: typeof OmnivoiceRoute
   ProjetosRoute: typeof ProjetosRoute
 }
 
@@ -56,6 +141,48 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agentes': {
+      id: '/agentes'
+      path: '/agentes'
+      fullPath: '/agentes'
+      preLoaderRoute: typeof AgentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/arquivos': {
+      id: '/arquivos'
+      path: '/arquivos'
+      fullPath: '/arquivos'
+      preLoaderRoute: typeof ArquivosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/modelos': {
+      id: '/modelos'
+      path: '/modelos'
+      fullPath: '/modelos'
+      preLoaderRoute: typeof ModelosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/omnivoice': {
+      id: '/omnivoice'
+      path: '/omnivoice'
+      fullPath: '/omnivoice'
+      preLoaderRoute: typeof OmnivoiceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projetos': {
@@ -70,6 +197,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentesRoute: AgentesRoute,
+  ArquivosRoute: ArquivosRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  DashboardRoute: DashboardRoute,
+  ModelosRoute: ModelosRoute,
+  OmnivoiceRoute: OmnivoiceRoute,
   ProjetosRoute: ProjetosRoute,
 }
 export const routeTree = rootRouteImport
