@@ -1,0 +1,34 @@
+# Deps e build
+node_modules/
+dist/
+build/
+.next/
+coverage/
+*.tsbuildinfo
+
+# Segredos e ambiente local
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Cache e temporários
+workflows/.object_info_cache.json
+*.tmp
+
+# Ferramentas externas e modelos (GBs) — regeneráveis via clone + scripts/
+# (opensource/ contém clones git aninhados; modelos do ComfyUI somam ~21GB)
+opensource/
+
+# Saídas geradas (vídeos/áudios) — manter só os .gitkeep
+output/videos/*
+output/audio/*
+output/images/*
+output/renders/*
+!output/videos/.gitkeep
+!output/audio/.gitkeep
+!output/images/.gitkeep
+!output/renders/.gitkeep

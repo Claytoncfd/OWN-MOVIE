@@ -1,0 +1,41 @@
+{
+  "services": {
+    "ui": { "url": "http://127.0.0.1:3000", "dir": ".", "start": "npm run dev" },
+    "bridge": { "url": "http://127.0.0.1:8000", "file": "api/bridge.mjs", "start": "node api/bridge.mjs" },
+    "comfyui": {
+      "url": "http://127.0.0.1:8188",
+      "dir": "opensource/comfyui",
+      "start": "python3 main.py --listen 127.0.0.1 --port 8188 --enable-cors-header",
+      "needs": ["workflows/WAN2.2.json", "models/unet", "models/clip", "models/vae"]
+    },
+    "omnivoice": {
+      "url": "http://127.0.0.1:8001",
+      "tts": "http://127.0.0.1:8001/tts",
+      "dir": "opensource/omnivoice",
+      "start": "omnivoice-demo --ip 127.0.0.1 --port 8001",
+      "fallback": "POST http://127.0.0.1:8000/api/tts repassa para o OmniVoice real; sem mock de áudio"
+    },
+    "omniroute": {
+      "url": "http://127.0.0.1:20128",
+      "openaiBase": "http://127.0.0.1:20128/v1",
+      "dir": "opensource/omniroute",
+      "start": "npm run dev"
+    },
+    "hermes": {
+      "dir": "opensource/hermes-agent",
+      "note": "Planner via OmniRoute em http://127.0.0.1:20128/v1 (provider custom, model nvidia/nemotron-3-nano-omni-30b-a3b-reasoning). Papéis Vision/Project/File são skills do Hermes, não serviços separados. Ver agents/hermes/README.md. Teste real: hermes --cli -z ... → OK."
+    }
+  },
+  "workflow": {
+    "source": "opensource/ComfyUI-Wan2.2-workflow-main/WAN2.2.json (fonte canônica, nunca editada)",
+    "active": "workflows/WAN2.2.json (caminhos corrigidos via scripts/fix-comfy-workflow.py)",
+    "canvas": "src/data/WAN2.2.json (mesmo conteúdo, alimenta canvas + aba Modelo)",
+    "comfyui": "opensource/comfyui/user/workflows/WAN2.2.json (onde o ComfyUI lista em Workflows)",
+    "apiExport": "workflows/WAN2.2.api.json (gerado via scripts/export-api-format.py, validado com POST /prompt + /interrupt; servido em GET :8000/api/workflow-api)",
+    "chaining": "last frame da cena N vira input i2v da cena N+1 quando Configurações → Encadear last frame está ligado"
+  },
+  "hardware": {
+    "policy": "Fila única na GPU (1 job de vídeo por vez); TTS/LLM/FFmpeg em paralelo na CPU",
+    "ffmpeg": "ffmpeg -i video.mp4 -i voz.wav -c:v copy -c:a aac out.mp4"
+  }
+}

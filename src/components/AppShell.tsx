@@ -1,0 +1,116 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { systemStats } from "@/lib/comfy";
+import { setSettings, useSettings } from "@/lib/settings";
+import { STUDIO_TABS, setStudioTab, useStudioTab } from "@/lib/ui-tabs";
+import { Button } from "@/components/ui/button";
+
+const NAV = [
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/projetos", label: "Projetos" },
+  { to: "/agentes", label: "Agentes IA" },
+  { to: "/", label: "ComfyUI" },
+  { to: "/omnivoice", label: "OmniVoice" },
+  { to: "/modelos", label: "Modelos" },
+  { to: "/arquivos", label: "Arquivos" },
+  { to: "/configuracoes", label: "Configurações" },
+] as const;
+
+const gb = (b?: number) => (b == null ? "—" : (b / 1024 ** 3).toFixed(1));
+
+export function useHardware() {
+  const s = useSettings();
+  return useQuery({
+    queryKey: ["system_stats", s.comfyUrl],
+    queryFn: systemStats,
+    refetchInterval: 4000,
+    retry: false,
+  });
+}
+
+function Chip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border bg-panel px-3 py-1.5 font-mono text-[11px] leading-tight">
+      <div className="text-muted-foreground">{label}</div>
+      <div>{value}</div>
+    </div>
+  );
+}
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const hw = useHardware();
+  const s = useSettings();
+  const studioTab = useStudioTab();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const dev = hw.data?.devices?.[0];
+  const sys = hw.data?.system;
+
+  function loadWorkflowFile() {
+    const i = document.createElement("input");
+    i.type = "file"; i.accept = ".json";
+    i.onchange = async () => { const f = i.files?.[0]; if (f) setSettings({ apiWorkflow: await f.text() }); };
+    i.click();
+  }
+  return (
+    <div className="min-h-screen">
+      <header className="flex flex-wrap items-center gap-6 border-b px-4 py-3">
+        <Link to="/" className="flex items-center" aria-label="OWN MOVIE">
+          <img src="/ownmovie_logo.png" alt="OWN MOVIE" className="h-12 w-12 rounded-md object-contain" />
+        </Link>
+        <nav className="flex flex-wrap gap-1">
+          {NAV.map((n) => (
+            <Link
+              key={n.to}
+              to={n.to}
+              activeOptions={{ exact: true }}
+              className="rounded-md border border-transparent px-3 py-2 text-sm text-foreground/80 hover:text-foreground"
+              activeProps={{ className: "!border-primary bg-accent !text-foreground" }}
+            >
+              {n.label}
+            </Link>
+          ))}
+        </nav>
+        {pathname === "/" && (
+          <div className="flex items-center gap-1 border-l pl-4">
+            {STUDIO_TABS.map((t) => (
+              <button
+                key={t}
+                onClick={() => setStudioTab(t)}
+                className={`rounded-md px-3 py-2 text-sm ${studioTab === t ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          <Chip
+            label="GPU · VRAM"
+            value={dev ? `${gb(dev.vram_total - dev.vram_free)} / ${gb(dev.vram_total)} GB` : hw.isError ? "offline" : "…"}
+          />
+          <Chip
+            label="RAM"
+            value={sys?.ram_total ? `${gb(sys.ram_total - (sys.ram_free ?? 0))} / ${gb(sys.ram_total)} GB` : "—"}
+          />
+          <Chip label="CPU" value={dev ? (dev.name.split(":")[0] ?? "").slice(0, 14) : "—"} />
+          <Chip label="ComfyUI" value={hw.isSuccess ? "● online" : "○ offline"} />
+          <span className="mx-1 h-6 w-px bg-border" aria-hidden />
+          <Button size="sm" variant="outline" onClick={loadWorkflowFile}>Carregar</Button>
+          <Button size="sm" variant="outline" asChild><a href={`data:application/json,${encodeURIComponent(s.apiWorkflow || "{}")}`} download="WAN2.2.api.json">Salvar</a></Button>
+          <Button size="sm" asChild><Link to="/projetos">Executar</Link></Button>
+        </div>
+      </header>
+      <main className="p-4">{children}</main>
+    </div>
+  );
+}
+
+export function Panel({ title, children, className = "" }: { title?: string; children: ReactNode; className?: string }) {
+  return (
+    <section className={`rounded-xl border bg-panel p-4 ${className}`}>
+      {title && <h3 className="panel-title mb-3">{title}</h3>}
+      {children}
+    </section>
+  );
+}

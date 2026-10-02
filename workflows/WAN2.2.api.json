@@ -1,0 +1,685 @@
+{
+ "75": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "85",
+    0
+   ]
+  }
+ },
+ "23": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "00020-1950169994.png"
+  }
+ },
+ "85": {
+  "class_type": "ImageResizeKJv2",
+  "inputs": {
+   "width": 512,
+   "height": 512,
+   "upscale_method": "lanczos",
+   "keep_proportion": "crop",
+   "pad_color": "0, 0, 0",
+   "crop_position": "center",
+   "divisible_by": 2,
+   "device": "cpu",
+   "image": [
+    "23",
+    0
+   ]
+  }
+ },
+ "62": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "2",
+    0
+   ]
+  }
+ },
+ "95": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "92",
+    0
+   ]
+  }
+ },
+ "91": {
+  "class_type": "easy loraStackApply",
+  "inputs": {}
+ },
+ "52": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything12": [
+    "74:72",
+    0
+   ]
+  }
+ },
+ "51": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything13": [
+    "74:72",
+    1
+   ]
+  }
+ },
+ "53": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything11": [
+    "74:72",
+    2
+   ]
+  }
+ },
+ "45": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "74:71",
+    0
+   ]
+  }
+ },
+ "60": {
+  "class_type": "Context (rgthree)",
+  "inputs": {
+   "base_ctx": [
+    "59:62",
+    0
+   ]
+  }
+ },
+ "40": {
+  "class_type": "Context (rgthree)",
+  "inputs": {}
+ },
+ "50": {
+  "class_type": "Context (rgthree)",
+  "inputs": {}
+ },
+ "109": {
+  "class_type": "EmptyLatentImage",
+  "inputs": {
+   "width": 512,
+   "height": 512,
+   "batch_size": 1
+  }
+ },
+ "67": {
+  "class_type": "Context (rgthree)",
+  "inputs": {}
+ },
+ "120": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "7",
+    5
+   ]
+  }
+ },
+ "97": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "7",
+    5
+   ]
+  }
+ },
+ "56": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "5",
+    0
+   ]
+  }
+ },
+ "5": {
+  "class_type": "ModelSamplingSD3",
+  "inputs": {
+   "shift": 8.000000000000002
+  }
+ },
+ "2": {
+  "class_type": "UnetLoaderGGUF",
+  "inputs": {
+   "unet_name": "wan2.2-rapid-mega-aio-nsfw-v12.1-Q4_K.gguf"
+  }
+ },
+ "4": {
+  "class_type": "CLIPLoaderGGUF",
+  "inputs": {
+   "clip_name": "umt5-xxl-encoder-Q3_K_S.gguf",
+   "type": "wan"
+  }
+ },
+ "61": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "4",
+    0
+   ]
+  }
+ },
+ "6": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "wan_2.1_vae.safetensors"
+  }
+ },
+ "39": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "6",
+    0
+   ]
+  }
+ },
+ "93": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything11": [
+    "91",
+    0
+   ]
+  }
+ },
+ "3": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "12",
+    0
+   ]
+  }
+ },
+ "49": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything12": [
+    "127",
+    0
+   ]
+  }
+ },
+ "7": {
+  "class_type": "KSampler (Efficient)",
+  "inputs": {
+   "seed": 664027206338740,
+   "steps": 4,
+   "cfg": 1.5,
+   "sampler_name": "euler_ancestral",
+   "scheduler": "beta",
+   "denoise": 1,
+   "preview_method": "none",
+   "vae_decode": "true (tiled)",
+   "positive": [
+    "60",
+    4
+   ],
+   "negative": [
+    "60",
+    5
+   ],
+   "latent_image": [
+    "60",
+    6
+   ]
+  }
+ },
+ "54": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything13": [
+    "12",
+    0
+   ]
+  }
+ },
+ "48": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything11": [
+    "12",
+    0
+   ]
+  }
+ },
+ "92": {
+  "class_type": "easy loraStack",
+  "inputs": {
+   "toggle": true,
+   "mode": "simple",
+   "num_loras": 1,
+   "lora_1_name": "DR34ML4Y_I2V_14B_LOW_V2.safetensors",
+   "lora_1_strength": 0.6,
+   "lora_1_model_strength": 1,
+   "lora_1_clip_strength": 1,
+   "lora_2_name": "None",
+   "lora_2_strength": 1,
+   "lora_2_model_strength": 1,
+   "lora_2_clip_strength": 1,
+   "lora_3_name": "None",
+   "lora_3_strength": 1,
+   "lora_3_model_strength": 1,
+   "lora_3_clip_strength": 1,
+   "lora_4_name": "None",
+   "lora_4_strength": 1,
+   "lora_4_model_strength": 1,
+   "lora_4_clip_strength": 1,
+   "lora_5_name": "None",
+   "lora_5_strength": 1,
+   "lora_5_model_strength": 1,
+   "lora_5_clip_strength": 1,
+   "lora_6_name": "None",
+   "lora_6_strength": 1,
+   "lora_6_model_strength": 1,
+   "lora_6_clip_strength": 1,
+   "lora_7_name": "None",
+   "lora_7_strength": 1,
+   "lora_7_model_strength": 1,
+   "lora_7_clip_strength": 1,
+   "lora_8_name": "None",
+   "lora_8_strength": 1,
+   "lora_8_model_strength": 1,
+   "lora_8_clip_strength": 1,
+   "lora_9_name": "None",
+   "lora_9_strength": 1,
+   "lora_9_model_strength": 1,
+   "lora_9_clip_strength": 1,
+   "lora_10_name": "None",
+   "lora_10_strength": 1,
+   "lora_10_model_strength": 1,
+   "lora_10_clip_strength": 1
+  }
+ },
+ "55": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything15": [
+    "127",
+    0
+   ]
+  }
+ },
+ "106": {
+  "class_type": "VRAMCleanup",
+  "inputs": {
+   "offload_model": true,
+   "offload_cache": true,
+   "anything": [
+    "109",
+    0
+   ]
+  }
+ },
+ "107": {
+  "class_type": "RAMCleanup",
+  "inputs": {
+   "clean_file_cache": true,
+   "clean_processes": true,
+   "clean_dlls": true,
+   "retry_times": 3,
+   "anything": [
+    "109",
+    0
+   ]
+  }
+ },
+ "82": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "filename_prefix": [
+    "104",
+    0
+   ],
+   "images": [
+    "83",
+    0
+   ]
+  }
+ },
+ "94": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything11": [
+    "91",
+    1
+   ]
+  }
+ },
+ "127": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": ""
+  }
+ },
+ "115": {
+  "class_type": "VHS_VideoCombine",
+  "inputs": {
+   "frame_rate": 16,
+   "loop_count": 0,
+   "filename_prefix": [
+    "104",
+    0
+   ],
+   "format": "video/h264-mp4",
+   "pix_fmt": "yuv420p",
+   "crf": 19,
+   "save_metadata": true,
+   "trim_to_audio": false,
+   "pingpong": false,
+   "save_output": true,
+   "videopreview": {
+    "hidden": false,
+    "paused": false,
+    "params": {
+     "filename": "Video_00009.mp4",
+     "subfolder": "Wan",
+     "type": "output",
+     "format": "video/h264-mp4",
+     "frame_rate": 16,
+     "workflow": "Video_00009.png",
+     "fullpath": "C:\\AI\\ComfyUI_outputs\\Wan\\Video_00009.mp4"
+    }
+   }
+  }
+ },
+ "139": {
+  "class_type": "PreviewImage",
+  "inputs": {
+   "images": [
+    "7",
+    5
+   ]
+  }
+ },
+ "12": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "A cat sunbathing in a french style window"
+  }
+ },
+ "104": {
+  "class_type": "PrimitiveString",
+  "inputs": {
+   "value": "Wan/Video"
+  }
+ },
+ "76": {
+  "class_type": "Anything Everywhere",
+  "inputs": {
+   "anything": [
+    "12",
+    0
+   ]
+  }
+ },
+ "83": {
+  "class_type": "VHS_SelectEveryNthImage",
+  "inputs": {
+   "select_every_nth": 1,
+   "skip_first_images": [
+    "138:128",
+    0
+   ]
+  }
+ },
+ "138:128": {
+  "class_type": "MathExpression|pysssss",
+  "inputs": {
+   "expression": "a - 1",
+   "a": [
+    "74:86",
+    0
+   ]
+  }
+ },
+ "74:65": {
+  "class_type": "INTConstant",
+  "inputs": {
+   "value": 512
+  }
+ },
+ "74:64": {
+  "class_type": "INTConstant",
+  "inputs": {
+   "value": 512
+  }
+ },
+ "74:73": {
+  "class_type": "Context (rgthree)",
+  "inputs": {
+   "base_ctx": [
+    "67",
+    0
+   ]
+  }
+ },
+ "74:80": {
+  "class_type": "PrimitiveString",
+  "inputs": {
+   "value": "Width"
+  }
+ },
+ "74:81": {
+  "class_type": "PrimitiveString",
+  "inputs": {
+   "value": "Height"
+  }
+ },
+ "74:69": {
+  "class_type": "CLIPVisionLoader",
+  "inputs": {
+   "clip_name": "D\\clip_vision_h.safetensors"
+  }
+ },
+ "74:70": {
+  "class_type": "CLIPVisionEncode",
+  "inputs": {
+   "crop": "center",
+   "clip_vision": [
+    "74:69",
+    0
+   ]
+  }
+ },
+ "74:72": {
+  "class_type": "WanImageToVideo",
+  "inputs": {
+   "width": [
+    "74:64",
+    0
+   ],
+   "height": [
+    "74:65",
+    0
+   ],
+   "length": [
+    "74:86",
+    0
+   ],
+   "batch_size": 1,
+   "clip_vision_output": [
+    "74:70",
+    0
+   ],
+   "vae": [
+    "74:73",
+    3
+   ],
+   "positive": [
+    "74:73",
+    4
+   ],
+   "negative": [
+    "74:73",
+    5
+   ]
+  }
+ },
+ "74:71": {
+  "class_type": "EmptyHunyuanVideo15Latent",
+  "inputs": {
+   "width": [
+    "74:64",
+    0
+   ],
+   "height": [
+    "74:65",
+    0
+   ],
+   "length": [
+    "74:86",
+    0
+   ],
+   "batch_size": 1
+  }
+ },
+ "74:66": {
+  "class_type": "INTConstant",
+  "inputs": {
+   "value": 16
+  }
+ },
+ "74:82": {
+  "class_type": "PrimitiveString",
+  "inputs": {
+   "value": "Seconds"
+  }
+ },
+ "74:89": {
+  "class_type": "PrimitiveString",
+  "inputs": {
+   "value": "FPS"
+  }
+ },
+ "74:86": {
+  "class_type": "MathExpression|pysssss",
+  "inputs": {
+   "expression": "a * b + 1",
+   "b": [
+    "74:85",
+    0
+   ],
+   "a": [
+    "74:66",
+    0
+   ]
+  }
+ },
+ "74:85": {
+  "class_type": "PrimitiveInt",
+  "inputs": {
+   "value": 1
+  }
+ },
+ "59:59": {
+  "class_type": "Context (rgthree)",
+  "inputs": {
+   "base_ctx": [
+    "40",
+    0
+   ]
+  }
+ },
+ "59:60": {
+  "class_type": "Context (rgthree)",
+  "inputs": {
+   "base_ctx": [
+    "50",
+    0
+   ]
+  }
+ },
+ "59:58": {
+  "class_type": "ImpactSwitch",
+  "inputs": {
+   "select": [
+    "59:44",
+    0
+   ],
+   "sel_mode": false,
+   "input1": [
+    "59:59",
+    4
+   ],
+   "input2": [
+    "59:60",
+    4
+   ]
+  }
+ },
+ "59:62": {
+  "class_type": "Context (rgthree)",
+  "inputs": {
+   "positive": [
+    "59:58",
+    0
+   ],
+   "negative": [
+    "59:42",
+    0
+   ],
+   "latent": [
+    "59:61",
+    0
+   ]
+  }
+ },
+ "59:61": {
+  "class_type": "ImpactSwitch",
+  "inputs": {
+   "select": [
+    "59:44",
+    0
+   ],
+   "sel_mode": false,
+   "input1": [
+    "59:59",
+    6
+   ],
+   "input2": [
+    "59:60",
+    6
+   ]
+  }
+ },
+ "59:44": {
+  "class_type": "PrimitiveInt",
+  "inputs": {
+   "value": 1
+  }
+ },
+ "59:42": {
+  "class_type": "ImpactSwitch",
+  "inputs": {
+   "select": [
+    "59:44",
+    0
+   ],
+   "sel_mode": false,
+   "input1": [
+    "59:59",
+    5
+   ],
+   "input2": [
+    "59:60",
+    5
+   ]
+  }
+ }
+}
