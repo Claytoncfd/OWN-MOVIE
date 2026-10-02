@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { buildScenes, patchScene, runPipeline, stopPipeline, updateProject, useProject, type StepState } from "@/lib/pipeline";
 import { useLogs } from "@/lib/logs";
 import { useSettings } from "@/lib/settings";
-import { LogView } from "./index";
+import { LogView } from "@/components/LogView";
 
 export const Route = createFileRoute("/projetos")({
   head: () => ({

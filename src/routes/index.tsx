@@ -5,6 +5,7 @@ import { WorkflowCanvas } from "@/components/WorkflowCanvas";
 import { Button } from "@/components/ui/button";
 import { stats, realValues } from "@/lib/workflow";
 import { useLogs } from "@/lib/logs";
+import { AGENTS, LogView } from "@/components/LogView";
 import { useProject } from "@/lib/pipeline";
 import { setSettings, useSettings } from "@/lib/settings";
 
@@ -24,14 +25,6 @@ export const Route = createFileRoute("/")({
 
 const TABS = ["Workflow", "Modelo", "Configurações", "Logs"] as const;
 
-export const AGENTS = [
-  ["Hermes Agent", "Planejamento e decisões"],
-  ["OmniRoute", "Roteamento de LLM · :20128"],
-  ["OmniVoice", "Voz / TTS · :8001"],
-  ["Vision Agent", "Análise de frames"],
-  ["Project Agent", "Cenas, prompts, versões"],
-  ["File Agent", "Arquivos e limpeza"],
-];
 
 function Studio() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Workflow");
@@ -113,16 +106,5 @@ function Studio() {
         </Panel>
       </div>
     </AppShell>
-  );
-}
-
-export function LogView({ lines }: { lines: { t: string; src: string; msg: string; level: string }[] }) {
-  return (
-    <div className="h-80 overflow-auto rounded-md border bg-background p-3 font-mono text-xs">
-      {lines.length === 0 && <div className="text-muted-foreground">Sem eventos ainda.</div>}
-      {lines.map((l, i) => (
-        <div key={i} className={l.level === "err" ? "text-destructive" : l.level === "ok" ? "text-ok" : ""}>[{l.t}] <span className="text-cyan">{l.src}</span> {l.msg}</div>
-      ))}
-    </div>
   );
 }
