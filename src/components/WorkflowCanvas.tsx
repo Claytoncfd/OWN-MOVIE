@@ -33,7 +33,7 @@ export function WorkflowCanvas({ height = 1100 }: { height?: number }) {
     const collapsed = n.flags?.collapsed;
     const x = n.pos[0] + (out ? (collapsed ? 140 : n.size[0]) : 0);
     const y = collapsed ? n.pos[1] - TITLE_H / 2 : n.pos[1] + SLOT_H / 2 + 4 + idx * SLOT_H;
-    return [x - bounds.x0, y - bounds.y0];
+    return [x - bounds.x0, y - bounds.y0] as const;
   };
 
   return (

@@ -9,15 +9,15 @@ export type Scene = {
   id: string;
   narration: string;
   prompt: string;
-  audioUrl?: string;
-  duration?: number;
-  seconds?: number;
-  videoUrl?: string;
-  lastFrame?: { filename: string; subfolder: string; type: string };
+  audioUrl?: string | undefined;
+  duration?: number | undefined;
+  seconds?: number | undefined;
+  videoUrl?: string | undefined;
+  lastFrame?: { filename: string; subfolder: string; type: string } | undefined;
   audio: StepState;
   video: StepState;
-  error?: string;
-  elapsed?: number;
+  error?: string | undefined;
+  elapsed?: number | undefined;
 };
 export type Project = { name: string; text: string; mode: "fragmentos" | "unico"; scenes: Scene[]; running: boolean };
 

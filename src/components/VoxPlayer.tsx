@@ -49,7 +49,7 @@ export function VoxPlayer({ scenes, title }: { scenes: Scene[]; title: string })
 
     for (let i = 0; i < ready.length && !cancelled; i++) {
       setIdx(i);
-      const sc = ready[i];
+      const sc = ready[i]!;
       const v = document.createElement("video");
       v.crossOrigin = "anonymous"; v.src = sc.videoUrl!; v.loop = true; v.muted = true; v.playsInline = true;
       const a = sc.audioUrl ? new Audio(sc.audioUrl) : null;
@@ -83,7 +83,7 @@ export function VoxPlayer({ scenes, title }: { scenes: Scene[]; title: string })
           ctx2d.font = "700 30px Sora";
           const lines: string[][] = [[]];
           for (const w of words) {
-            const cur = lines[lines.length - 1];
+            const cur = lines[lines.length - 1]!;
             if (ctx2d.measureText([...cur, w].join(" ")).width > W - 160) lines.push([w]); else cur.push(w);
           }
           const vis = lines.slice(-2 - 0);

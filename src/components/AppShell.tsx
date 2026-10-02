@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             label="RAM"
             value={sys?.ram_total ? `${gb(sys.ram_total - (sys.ram_free ?? 0))} / ${gb(sys.ram_total)} GB` : "—"}
           />
-          <Chip label="CPU" value={dev ? dev.name.split(":")[0].slice(0, 14) : "—"} />
+          <Chip label="CPU" value={dev ? (dev.name.split(":")[0] ?? "").slice(0, 14) : "—"} />
           <Chip label="ComfyUI" value={hw.isSuccess ? "● online" : "○ offline"} />
         </div>
       </header>

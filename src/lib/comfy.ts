@@ -37,7 +37,7 @@ export type PatchParams = {
   seed: number;
   seconds: number;
   prefix: string;
-  image?: string; // uploaded filename -> i2v
+  image?: string | undefined; // uploaded filename -> i2v
 };
 
 /** Patches the exported WAN2.2.api.json using the node IDs of the real workflow */
@@ -98,9 +98,9 @@ export async function waitForResult(promptId: string, onTick?: (sec: number) => 
       let video: string | undefined;
       let lastFrame: OutFile | undefined;
       for (const [nid, o] of Object.entries(h.outputs as Record<string, Record<string, OutFile[]>>)) {
-        const vids = o.gifs ?? o.videos;
+        const vids = o["gifs"] ?? o["videos"];
         if (vids?.[0]) video = viewUrl(vids[0]);
-        if ((nid === "82" || nid.endsWith(":82")) && o.images?.[0]) lastFrame = o.images[0];
+        if ((nid === "82" || nid.endsWith(":82")) && o["images"]?.[0]) lastFrame = o["images"][0];
       }
       if (video) return { video, lastFrame };
     }
