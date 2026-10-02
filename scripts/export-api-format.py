@@ -128,11 +128,11 @@ def main():
         if o in nodes and t in nodes:
             resolved.append((str(o), os, str(t), in_name(nodes[t], ts)))
     for ue in wf.get("extra", {}).get("ue_links", []):
-        dn, up = str(ue["downstream"]), str(ue["upstream"])
+        dn, up = int(ue["downstream"]), int(ue["upstream"])
         if dn in nodes and up in nodes:
-            name = in_name(nodes[int(dn)], ue["downstream_slot"])
+            name = in_name(nodes[dn], ue["downstream_slot"])
             if name:
-                resolved.append((up, ue["upstream_slot"], dn, name))
+                resolved.append((str(up), ue["upstream_slot"], str(dn), name))
     linked_outer = {}
     for _o, _os, t, name in resolved:
         linked_outer.setdefault(t, set()).add(name)
@@ -238,8 +238,17 @@ def main():
             continue
         if t in set_ids:
             continue  # SetNode consumido pelo getset acima
-        if t in api and o in api and name:
+        if o in api and t in api and name:
             api[t]["inputs"][name] = [o, os]
+            continue
+        # origem é um subgraph: resolve pela saída registrada no flatten
+        if t in api and name:
+            oname = _out_name(nodes[int(o)], os) if o.isdigit() and int(o) in nodes else None
+            real = sub_out_src.get((o, oname)) if oname else None
+            if real:
+                api[t]["inputs"][name] = [real[0], real[1]]
+            else:
+                print(f"  ! link órfão: {o}:{os} -> {t}.{name}")
 
     API_PATH.write_text(json.dumps(api, indent=1))
     print(f"API: {len(api)} nodes -> {API_PATH.relative_to(ROOT)}")

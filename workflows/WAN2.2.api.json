@@ -51,7 +51,20 @@
  },
  "91": {
   "class_type": "easy loraStackApply",
-  "inputs": {}
+  "inputs": {
+   "lora_stack": [
+    "92",
+    0
+   ],
+   "model": [
+    "2",
+    0
+   ],
+   "optional_clip": [
+    "4",
+    0
+   ]
+  }
  },
  "52": {
   "class_type": "Anything Everywhere",
@@ -95,16 +108,54 @@
    "base_ctx": [
     "59:62",
     0
+   ],
+   "vae": [
+    "6",
+    0
    ]
   }
  },
  "40": {
   "class_type": "Context (rgthree)",
-  "inputs": {}
+  "inputs": {
+   "vae": [
+    "6",
+    0
+   ],
+   "positive": [
+    "12",
+    0
+   ],
+   "negative": [
+    "127",
+    0
+   ],
+   "latent": [
+    "74:71",
+    0
+   ]
+  }
  },
  "50": {
   "class_type": "Context (rgthree)",
-  "inputs": {}
+  "inputs": {
+   "vae": [
+    "6",
+    0
+   ],
+   "positive": [
+    "74:72",
+    0
+   ],
+   "negative": [
+    "74:72",
+    1
+   ],
+   "latent": [
+    "74:72",
+    2
+   ]
+  }
  },
  "109": {
   "class_type": "EmptyLatentImage",
@@ -116,7 +167,24 @@
  },
  "67": {
   "class_type": "Context (rgthree)",
-  "inputs": {}
+  "inputs": {
+   "clip": [
+    "91",
+    1
+   ],
+   "vae": [
+    "6",
+    0
+   ],
+   "positive": [
+    "12",
+    0
+   ],
+   "negative": [
+    "127",
+    0
+   ]
+  }
  },
  "120": {
   "class_type": "Anything Everywhere",
@@ -148,7 +216,11 @@
  "5": {
   "class_type": "ModelSamplingSD3",
   "inputs": {
-   "shift": 8.000000000000002
+   "shift": 8.000000000000002,
+   "model": [
+    "91",
+    0
+   ]
   }
  },
  "2": {
@@ -237,6 +309,14 @@
    "latent_image": [
     "60",
     6
+   ],
+   "model": [
+    "5",
+    0
+   ],
+   "optional_vae": [
+    "6",
+    0
    ]
   }
  },
@@ -364,7 +444,11 @@
  "127": {
   "class_type": "CLIPTextEncode",
   "inputs": {
-   "text": ""
+   "text": "",
+   "clip": [
+    "91",
+    1
+   ]
   }
  },
  "115": {
@@ -395,7 +479,11 @@
      "workflow": "Video_00009.png",
      "fullpath": "C:\\AI\\ComfyUI_outputs\\Wan\\Video_00009.mp4"
     }
-   }
+   },
+   "images": [
+    "7",
+    5
+   ]
   }
  },
  "139": {
@@ -410,7 +498,11 @@
  "12": {
   "class_type": "CLIPTextEncode",
   "inputs": {
-   "text": "A cat sunbathing in a french style window"
+   "text": "A cat sunbathing in a french style window",
+   "clip": [
+    "91",
+    1
+   ]
   }
  },
  "104": {
@@ -435,6 +527,10 @@
    "skip_first_images": [
     "138:128",
     0
+   ],
+   "images": [
+    "7",
+    5
    ]
   }
  },
