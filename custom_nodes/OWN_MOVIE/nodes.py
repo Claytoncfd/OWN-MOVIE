@@ -281,7 +281,7 @@ class OwnMovieFinalConcat:
 class OwnMovieExcerpt:
     """Compatível com o node que já existe no seu ComfyUI (categoria 'OWN MOVIE', entrada `value`, saída `excerpt`).
     Mantido para não quebrar workflows antigos; o 02_CENA novo não usa mais (a cena já carrega o trecho)."""
-    CATEGORY, FUNCTION = "OWN MOVIE", "run"
+    CATEGORY, FUNCTION = "OWN_MOVIE", "run"
     RETURN_TYPES, RETURN_NAMES = ("STRING",), ("excerpt",)
 
     @classmethod
