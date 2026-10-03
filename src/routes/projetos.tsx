@@ -1,22 +1,39 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { AppShell, Panel } from "@/components/AppShell";
 import { VoxPlayer } from "@/components/VoxPlayer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { buildScenes, patchScene, runPipeline, stopPipeline, updateProject, useProject, type StepState } from "@/lib/pipeline";
+import {
+  buildFinal,
+  generatePlan,
+  isRunning,
+  refresh,
+  renderAll,
+  stopPipeline,
+  updateDraft,
+  useProject,
+} from "@/lib/pipeline";
+import { updateScene, type ServerScene } from "@/lib/own-movie";
+import { viewUrl } from "@/lib/comfy";
 import { useLogs } from "@/lib/logs";
-import { useSettings } from "@/lib/settings";
 import { LogView } from "@/components/LogView";
 
 export const Route = createFileRoute("/projetos")({
   head: () => ({
     meta: [
       { title: "Projetos — Texto para áudio e vídeo VOX | OWN MOVIE" },
-      { name: "description", content: "Cole um texto único ou fragmentado e transforme em narração OmniVoice e clipes WAN 2.2 no estilo VOX." },
+      {
+        name: "description",
+        content:
+          "Cole um texto único ou fragmentado e gere cenas, narração OmniVoice e clipes WAN 2.2 no estilo VOX, tudo executado por nodes no ComfyUI.",
+      },
       { property: "og:title", content: "Projetos — OWN MOVIE" },
-      { property: "og:description", content: "Texto → áudio → vídeo estilo VOX com ComfyUI local." },
+      {
+        property: "og:description",
+        content: "Texto → áudio → vídeo estilo VOX com ComfyUI local.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -24,110 +41,243 @@ export const Route = createFileRoute("/projetos")({
   component: Projetos,
 });
 
-const badge: Record<StepState, string> = { idle: "text-muted-foreground", run: "text-warn animate-pulse", ok: "text-ok", err: "text-destructive" };
-const label: Record<StepState, string> = { idle: "aguardando", run: "processando", ok: "pronto", err: "erro" };
+const PHASE: Record<string, string> = {
+  plan: "Planejando cenas",
+  voice: "Gerando narração",
+  video: "Renderizando vídeo",
+  final: "Montando filme",
+};
+
+function SceneCard({
+  sc,
+  project,
+  busy,
+}: {
+  sc: ServerScene;
+  project: string;
+  busy: boolean;
+}) {
+  const [narration, setNarration] = useState(sc.narration);
+  const [prompt, setPrompt] = useState(sc.prompt);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    setNarration(sc.narration);
+    setPrompt(sc.prompt);
+  }, [sc.narration, sc.prompt]);
+  const dirty = narration !== sc.narration || prompt !== sc.prompt;
+  async function save() {
+    setErr("");
+    try {
+      await updateScene(project, sc.id, { narration, prompt });
+      await refresh();
+    } catch (e) {
+      setErr((e as Error).message);
+    }
+  }
+  return (
+    <div className="rounded-lg border bg-background/40 p-3">
+      <div className="mb-1 flex items-center justify-between font-mono text-xs">
+        <span className="text-cyan">
+          CENA {String(sc.index + 1).padStart(2, "0")}
+        </span>
+        <span>
+          <span className={sc.has_audio ? "text-ok" : "text-muted-foreground"}>
+            áudio: {sc.has_audio ? "pronto" : "pendente"}
+          </span>{" "}
+          ·{" "}
+          <span className={sc.has_clip ? "text-ok" : "text-muted-foreground"}>
+            vídeo: {sc.has_clip ? "pronto" : "pendente"}
+          </span>
+        </span>
+      </div>
+      <Textarea
+        rows={2}
+        value={narration}
+        onChange={(e) => setNarration(e.target.value)}
+        className="mb-1 text-sm"
+      />
+      <Input
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        className="font-mono text-xs"
+      />
+      {sc.tone && (
+        <div className="mt-1 text-xs text-muted-foreground">
+          tom: {sc.tone} · ritmo: {sc.pace}
+        </div>
+      )}
+      {sc.warnings.map((w) => (
+        <div key={w} className="mt-1 text-xs text-warn">
+          {w}
+        </div>
+      ))}
+      {err && <div className="mt-1 text-xs text-destructive">{err}</div>}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {sc.audio && <audio src={viewUrl(sc.audio)} controls className="h-8" />}
+        {sc.clip && (
+          <video
+            src={viewUrl(sc.clip)}
+            controls
+            loop
+            className="h-24 rounded"
+          />
+        )}
+        {dirty && (
+          <Button size="sm" disabled={busy} onClick={save}>
+            Salvar edição
+          </Button>
+        )}
+        {sc.has_clip && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => renderAll(sc.index)}
+          >
+            Refazer vídeo
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function Projetos() {
   const p = useProject();
-  const s = useSettings();
   const logs = useLogs();
-  const [planning, setPlanning] = useState(false);
-  const [saved, setSaved] = useState("");
-
-  async function saveServer() {
-    setSaved("salvando…");
-    try {
-      const r = await fetch("http://127.0.0.1:8000/api/project", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: p.name.replace(/\W+/g, "_").slice(0, 64) || "projeto",
-          text: p.text,
-          scenes: p.scenes.map((s) => ({ narration: s.narration, prompt: s.prompt })),
-        }),
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
-      setSaved(`salvo no servidor: ${j.scenes} cenas`);
-    } catch (e) {
-      setSaved(`falhou: ${(e as Error).message} (bridge :8000 no ar?)`);
-    }
-  }
+  const busy = isRunning(p);
+  useEffect(() => {
+    void refresh().catch(() => undefined);
+  }, [p.name]);
+  const ready = p.scenes.filter((s) => s.clip);
+  const pending = p.scenes.filter((s) => !s.has_clip).length;
 
   return (
     <AppShell>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="space-y-4">
           <Panel title="1 · Roteiro">
-            <Input value={p.name} onChange={(e) => updateProject({ name: e.target.value })} className="mb-3" />
+            <Input
+              value={p.name}
+              onChange={(e) => updateDraft({ name: e.target.value })}
+              className="mb-3"
+            />
             <div className="mb-2 flex gap-2">
               {(["fragmentos", "unico"] as const).map((m) => (
-                <Button key={m} size="sm" variant={p.mode === m ? "default" : "outline"} onClick={() => updateProject({ mode: m })}>
+                <Button
+                  key={m}
+                  size="sm"
+                  variant={p.mode === m ? "default" : "outline"}
+                  onClick={() => updateDraft({ mode: m })}
+                >
                   {m === "fragmentos" ? "Texto fragmentado" : "Texto único"}
                 </Button>
               ))}
             </div>
             <p className="mb-2 text-xs text-muted-foreground">
-              {p.mode === "fragmentos" ? "Cada bloco separado por linha em branco (ou ---) vira uma cena." : "O texto é dividido automaticamente em cenas por frases (~180 caracteres)."}
+              {p.mode === "fragmentos"
+                ? "Cada bloco separado por linha em branco (ou ---) vira uma cena."
+                : "O texto é dividido automaticamente em cenas por frases (~180 caracteres)."}
             </p>
-            <Textarea rows={10} value={p.text} onChange={(e) => updateProject({ text: e.target.value })} placeholder={"Em 1969, o homem pisou na Lua.\n\nMas a corrida espacial começou muito antes…"} />
-            <Button className="mt-3" disabled={!p.text.trim() || planning || p.running} onClick={async () => { setPlanning(true); await buildScenes(); setPlanning(false); }}>
-              {planning ? "Hermes planejando…" : "Gerar cenas"}
+            <Textarea
+              rows={10}
+              value={p.text}
+              onChange={(e) => updateDraft({ text: e.target.value })}
+              placeholder={
+                "Em 1969, o homem pisou na Lua.\n\nMas a corrida espacial começou muito antes…"
+              }
+            />
+            <Button
+              className="mt-3"
+              disabled={!p.text.trim() || busy}
+              onClick={generatePlan}
+            >
+              {p.phase === "plan" ? "Planejando…" : "Gerar cenas"}
             </Button>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Roda o workflow 01_PLANO no ComfyUI (nodes: Dividir roteiro →
+              Planner → Emoção → Salvar projeto).
+            </p>
           </Panel>
 
           <Panel title={`2 · Cenas (${p.scenes.length})`}>
-            {!s.apiWorkflow && (
-              <div className="mb-3 rounded-md border border-warn/50 p-2 text-xs text-warn">
-                Carregue o WAN2.2.api.json em <Link to="/configuracoes" className="underline">Configurações</Link> para executar no ComfyUI.
-              </div>
+            {p.scenes.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Nenhuma cena ainda. Gere o plano acima, ou escolha um projeto já
+                existente pelo nome.
+              </p>
             )}
             <div className="space-y-3">
-              {p.scenes.map((sc, i) => (
-                <div key={sc.id} className="rounded-lg border bg-background/40 p-3">
-                  <div className="mb-1 flex items-center justify-between font-mono text-xs">
-                    <span className="text-cyan">CENA {String(i + 1).padStart(2, "0")}</span>
-                    <span>
-                      <span className={badge[sc.audio]}>áudio: {label[sc.audio]}{sc.duration ? ` ${sc.duration.toFixed(1)}s` : ""}</span> ·{" "}
-                      <span className={badge[sc.video]}>vídeo: {label[sc.video]}{sc.video === "run" ? ` ${sc.elapsed ?? 0}s` : ""}</span>
-                    </span>
-                  </div>
-                  <Textarea rows={2} value={sc.narration} onChange={(e) => patchScene(sc.id, { narration: e.target.value, audioUrl: undefined, audio: "idle" })} className="mb-1 text-sm" />
-                  <Input value={sc.prompt} onChange={(e) => patchScene(sc.id, { prompt: e.target.value, video: "idle", videoUrl: undefined })} className="font-mono text-xs" />
-                  {sc.error && <div className="mt-1 text-xs text-destructive">{sc.error}</div>}
-                  <div className="mt-2 flex gap-2">
-                    {sc.audioUrl && <audio src={sc.audioUrl} controls className="h-8" />}
-                    {sc.videoUrl && <video src={sc.videoUrl} controls loop muted className="h-24 rounded" />}
-                    {(sc.video === "err" || sc.video === "ok") && (
-                      <Button size="sm" variant="outline" onClick={() => patchScene(sc.id, { video: "idle", videoUrl: undefined })}>Refazer vídeo</Button>
-                    )}
-                  </div>
-                </div>
+              {p.scenes.map((sc) => (
+                <SceneCard key={sc.id} sc={sc} project={p.name} busy={busy} />
               ))}
             </div>
             {p.scenes.length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Button onClick={runPipeline} disabled={p.running}>{p.running ? "Executando…" : "Executar: áudio → vídeo"}</Button>
-                {p.running && <Button variant="destructive" onClick={stopPipeline}>Cancelar</Button>}
-                <Button variant="outline" onClick={saveServer}>Salvar no servidor</Button>
-                {saved && <span className="font-mono text-xs text-muted-foreground">{saved}</span>}
+                <Button
+                  onClick={() => renderAll()}
+                  disabled={busy || pending === 0}
+                >
+                  {busy && p.phase !== "plan" && p.phase !== "final"
+                    ? "Executando…"
+                    : pending === 0
+                      ? "Todas as cenas prontas"
+                      : `Renderizar ${pending} cena(s): voz → vídeo`}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={buildFinal}
+                  disabled={busy || ready.length !== p.scenes.length}
+                >
+                  Montar filme final
+                </Button>
+                {busy && (
+                  <Button variant="destructive" onClick={stopPipeline}>
+                    Cancelar
+                  </Button>
+                )}
               </div>
+            )}
+            {busy && (
+              <div className="mt-2 font-mono text-xs text-warn">
+                {PHASE[p.phase]} · {p.busy}
+              </div>
+            )}
+            {p.error && (
+              <div className="mt-2 text-sm text-destructive">{p.error}</div>
             )}
           </Panel>
         </div>
 
         <div className="space-y-4">
-          <Panel title="3 · Player VOX">
-            <VoxPlayer scenes={p.scenes} title={p.name} />
+          <Panel title="3 · Resultado">
+            {p.final && (
+              <div className="mb-3">
+                <video
+                  src={viewUrl(p.final)}
+                  controls
+                  className="w-full rounded-lg border"
+                />
+                <a
+                  href={viewUrl(p.final)}
+                  download
+                  className="text-xs text-cyan underline"
+                >
+                  baixar final.mp4
+                </a>
+              </div>
+            )}
+            <VoxPlayer
+              scenes={ready.map((s) => ({
+                url: viewUrl(s.clip!),
+                narration: s.narration,
+              }))}
+              title={p.name}
+            />
           </Panel>
-          <Panel title="Distribuição de hardware">
-            <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
-              {[["GPU", "UNet Wan 2.2 + VAE tiled · 1 job por vez"], ["CPU", "OmniVoice TTS em paralelo, Hermes/OmniRoute, export"], ["RAM", "Offload GGUF, cache CLIP, buffers"], ["SSD", "Modelos mmap, output/, last frames"]].map(([k, v]) => (
-                <div key={k} className="rounded-md border p-2"><div className="font-display font-semibold text-cyan">{k}</div><div className="text-muted-foreground">{v}</div></div>
-              ))}
-            </div>
+          <Panel title="Logs">
+            <LogView lines={logs} />
           </Panel>
-          <Panel title="Logs"><LogView lines={logs} /></Panel>
         </div>
       </div>
     </AppShell>

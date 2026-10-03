@@ -1,0 +1,76 @@
+{
+ "1": {
+  "class_type": "OwnMovieScriptSplitter",
+  "inputs": {
+   "text": "Em 1969, o homem pisou na Lua.\n\nMas a corrida espacial começou muito antes.",
+   "mode": "fragmentos",
+   "max_chars": 180
+  },
+  "_meta": {
+   "title": "Roteiro → cenas"
+  }
+ },
+ "2": {
+  "class_type": "OwnMovieRouterConfig",
+  "inputs": {
+   "base_url": "http://127.0.0.1:20128/v1",
+   "planner_model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+   "emotion_model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+   "timeout_s": 300,
+   "temperature": 0.4
+  },
+  "_meta": {
+   "title": "OmniRoute"
+  }
+ },
+ "3": {
+  "class_type": "OwnMovieAgentPlanner",
+  "inputs": {
+   "router": [
+    "2",
+    0
+   ],
+   "scenes": [
+    "1",
+    0
+   ],
+   "overwrite": false,
+   "style_hint": ""
+  },
+  "_meta": {
+   "title": "Agente Planner"
+  }
+ },
+ "4": {
+  "class_type": "OwnMovieAgentEmotion",
+  "inputs": {
+   "router": [
+    "2",
+    0
+   ],
+   "scenes": [
+    "3",
+    0
+   ],
+   "allowed_tags": "[laughter], [sigh]",
+   "min_similarity": 0.85,
+   "on_fail": "keep_original"
+  },
+  "_meta": {
+   "title": "Agente Emoção"
+  }
+ },
+ "5": {
+  "class_type": "OwnMovieProjectSave",
+  "inputs": {
+   "project_name": "projeto_001",
+   "scenes": [
+    "4",
+    0
+   ]
+  },
+  "_meta": {
+   "title": "Salvar projeto"
+  }
+ }
+}

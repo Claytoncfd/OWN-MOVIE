@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { Scene } from "@/lib/pipeline";
+export type VoxScene = { url: string; narration: string };
 
 const W = 1280, H = 720;
 
@@ -8,14 +8,14 @@ function cssVar(name: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-/** Player estilo VOX: fundo papel, clipe em moldura recortada, legenda com marca-texto palavra a palavra. Exporta WebM com áudio. */
-export function VoxPlayer({ scenes, title }: { scenes: Scene[]; title: string }) {
+/** Player estilo VOX: fundo papel, clipe em moldura recortada, legenda com marca-texto palavra a palavra. O clipe já traz a narração (mux no ComfyUI); aqui só entra o visual VOX. Exporta WebM com áudio. */
+export function VoxPlayer({ scenes, title }: { scenes: VoxScene[]; title: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [playing, setPlaying] = useState(false);
   const [idx, setIdx] = useState(0);
   const [recording, setRecording] = useState(false);
   const stopRef = useRef<() => void>(() => {});
-  const ready = scenes.filter((s) => s.videoUrl);
+  const ready = scenes;
 
   useEffect(() => () => stopRef.current(), []);
 
@@ -51,20 +51,17 @@ export function VoxPlayer({ scenes, title }: { scenes: Scene[]; title: string })
       setIdx(i);
       const sc = ready[i]!;
       const v = document.createElement("video");
-      v.crossOrigin = "anonymous"; v.src = sc.videoUrl!; v.loop = true; v.muted = true; v.playsInline = true;
-      const a = sc.audioUrl ? new Audio(sc.audioUrl) : null;
-      if (a && ac && dest) { const src = ac.createMediaElementSource(a); src.connect(dest); src.connect(ac.destination); }
-      cleanup.push(() => { v.pause(); a?.pause(); });
+      v.crossOrigin = "anonymous"; v.src = sc.url; v.playsInline = true;
+      if (ac && dest) { const src = ac.createMediaElementSource(v); src.connect(dest); src.connect(ac.destination); }
+      cleanup.push(() => { v.pause(); });
       await v.play().catch(() => {});
-      await a?.play().catch(() => {});
-      const dur = a ? (sc.duration ?? 3) : Math.max(2, sc.seconds ?? 2);
-      const t0 = performance.now();
+      const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 3;
       const words = sc.narration.split(" ");
       await new Promise<void>((done) => {
         const draw = () => {
           if (cancelled) return done();
-          const t = a ? a.currentTime : (performance.now() - t0) / 1000;
-          if ((a && a.ended) || t >= dur) return done();
+          const t = v.currentTime;
+          if (v.ended || t >= dur) return done();
           // fundo papel
           ctx2d.fillStyle = paper; ctx2d.fillRect(0, 0, W, H);
           ctx2d.fillStyle = blue; ctx2d.fillRect(0, 0, W, 10);
@@ -104,7 +101,7 @@ export function VoxPlayer({ scenes, title }: { scenes: Scene[]; title: string })
         };
         draw();
       });
-      v.pause(); a?.pause();
+      v.pause();
     }
     if (!cancelled) stopRef.current();
   }

@@ -1,19 +1,28 @@
 {
   "services": {
-    "ui": { "url": "http://127.0.0.1:3000", "dir": ".", "start": "npm run dev" },
-    "bridge": { "url": "http://127.0.0.1:8000", "file": "api/bridge.mjs", "start": "node api/bridge.mjs" },
+    "ui": {
+      "url": "http://127.0.0.1:3000",
+      "dir": ".",
+      "start": "npm run dev"
+    },
     "comfyui": {
       "url": "http://127.0.0.1:8188",
       "dir": "opensource/comfyui",
       "start": "python3 main.py --listen 127.0.0.1 --port 8188 --enable-cors-header",
-      "needs": ["workflows/WAN2.2.json", "models/unet", "models/clip", "models/vae"]
+      "needs": [
+        "workflows/WAN2.2.json",
+        "models/unet",
+        "models/clip",
+        "models/vae",
+        "custom_nodes/OWN_MOVIE (bash scripts/install-nodes.sh)"
+      ]
     },
     "omnivoice": {
       "url": "http://127.0.0.1:8001",
       "tts": "http://127.0.0.1:8001/tts",
       "dir": "opensource/omnivoice",
       "start": "omnivoice-demo --ip 127.0.0.1 --port 8001",
-      "fallback": "POST http://127.0.0.1:8000/api/tts repassa para o OmniVoice real; sem mock de áudio"
+      "fallback": "O node OWN · OmniVoice (dentro do ComfyUI) usa omnivoice-infer; defina OMNIVOICE_BIN. Sem bridge."
     },
     "omniroute": {
       "url": "http://127.0.0.1:20128",
@@ -31,8 +40,8 @@
     "active": "workflows/WAN2.2.json (caminhos corrigidos via scripts/fix-comfy-workflow.py)",
     "canvas": "src/data/WAN2.2.json (mesmo conteúdo, alimenta canvas + aba Modelo)",
     "comfyui": "opensource/comfyui/user/workflows/WAN2.2.json (onde o ComfyUI lista em Workflows)",
-    "apiExport": "workflows/WAN2.2.api.json (gerado via scripts/export-api-format.py, validado com POST /prompt + /interrupt; servido em GET :8000/api/workflow-api)",
-    "chaining": "last frame da cena N vira input i2v da cena N+1 quando Configurações → Encadear last frame está ligado"
+    "apiExport": "workflows/WAN2.2.api.json (base) → scripts/build-workflows.py gera 01_PLANO, 02_VOZ, 02_CENA e 03_FINAL (copiados também em src/data/workflows/)",
+    "chaining": "node OWN · Carregar cena lê o último frame da cena anterior em output/OWN_MOVIE/projects/<nome>/frames quando \"Encadear último frame\" está ligado"
   },
   "hardware": {
     "policy": "Fila única na GPU (1 job de vídeo por vez); TTS/LLM/FFmpeg em paralelo na CPU",

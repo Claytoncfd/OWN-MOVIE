@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, Panel, useHardware } from "@/components/AppShell";
-import { queueInfo } from "@/lib/comfy";
+import { ownMovieNodesInstalled, queueInfo } from "@/lib/comfy";
+import { getHealth, type Health } from "@/lib/own-movie";
 import { useProject } from "@/lib/pipeline";
 import { useSettings } from "@/lib/settings";
 import { AGENTS } from "@/components/LogView";
@@ -27,11 +28,11 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-function Bar({ label, used, total, unit }: { label: string; used?: number; total?: number; unit: string }) {
+function Bar({ label, used, total, unit }: { label: string; used?: number | undefined; total?: number | undefined; unit: string }) {
   const pct = used != null && total ? (used / total) * 100 : 0;
   return (
     <Panel>
-      <div className="flex justify-between text-sm"><span className="font-display font-semibold">{label}</span><span className="font-mono">{total ? `${used!.toFixed(1)} / ${total.toFixed(1)} ${unit}` : "—"}</span></div>
+      <div className="flex justify-between text-sm"><span className="font-display font-semibold">{label}</span><span className="font-mono">{total && used != null ? `${used.toFixed(1)} / ${total.toFixed(1)} ${unit}` : "—"}</span></div>
       <div className="mt-3 h-2 rounded-full bg-background"><div className="h-2 rounded-full bg-primary" style={{ width: `${pct}%` }} /></div>
     </Panel>
   );
@@ -42,26 +43,9 @@ function Dashboard() {
   const s = useSettings();
   const q = useQuery({ queryKey: ["queue", s.comfyUrl], queryFn: queueInfo, refetchInterval: 3000, retry: false });
   const p = useProject();
-  const health = useQuery({
-    queryKey: ["bridge-health"],
-    queryFn: async () => {
-      const r = await fetch("http://127.0.0.1:8000/api/health");
-      if (!r.ok) throw new Error("bridge offline");
-      const j = await r.json();
-      return {
-        OmniRoute: !!j.omniroute?.online,
-        OmniVoice: !!j.omnivoice?.online,
-        ComfyUI: !!j.comfy?.online,
-      } as Record<string, boolean>;
-    },
-    refetchInterval: 8000,
-    retry: false,
-  });
-  const up = (n: string) =>
-    n === "OmniRoute" ? health.data?.OmniRoute
-    : n === "OmniVoice" ? health.data?.OmniVoice
-    : n === "Hermes Agent" ? health.data?.OmniRoute
-    : true;
+  const nodes = useQuery({ queryKey: ["own-nodes", s.comfyUrl], queryFn: ownMovieNodesInstalled, refetchInterval: 15000, retry: false });
+  const health = useQuery({ queryKey: ["own-health", s.comfyUrl], queryFn: getHealth, refetchInterval: 8000, retry: false });
+  const up = (key: string) => !!health.data?.[key as keyof Health]?.online;
   const d = hw.data?.devices?.[0];
   const G = 1024 ** 3;
   return (
@@ -72,14 +56,14 @@ function Dashboard() {
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         <Panel title="Fila GPU (ComfyUI)"><div className="font-mono text-3xl">{q.data ? `${q.data.running} / ${q.data.pending}` : "—"}</div><div className="text-xs text-muted-foreground">executando / pendentes</div></Panel>
-        <Panel title="Projeto ativo"><div className="text-lg">{p.name}</div><div className="text-xs text-muted-foreground">{p.scenes.filter((x) => x.videoUrl).length}/{p.scenes.length} cenas renderizadas</div></Panel>
-        <Panel title="Sistema"><div className="font-mono text-xs">ComfyUI {hw.data?.system.comfyui_version ?? "—"}<br />Python {hw.data?.system.python_version?.split(" ")[0] ?? "—"}<br />{hw.data?.system.os ?? ""}</div></Panel>
+        <Panel title="Projeto ativo"><div className="text-lg">{p.name}</div><div className="text-xs text-muted-foreground">{p.scenes.filter((x) => x.has_clip).length}/{p.scenes.length} cenas renderizadas</div></Panel>
+        <Panel title="Sistema"><div className="font-mono text-xs">Nodes OWN_MOVIE {nodes.data ? "● instalados" : "○ não encontrados"}<br />ComfyUI {hw.data?.system.comfyui_version ?? "—"}<br />Python {hw.data?.system.python_version?.split(" ")[0] ?? "—"}<br />{hw.data?.system.os ?? ""}</div></Panel>
       </div>
       <Panel title="Agentes IA" className="mt-4">
         <div className="grid gap-4 md:grid-cols-3">
-          {AGENTS.map(([n, desc, long]) => (
+          {AGENTS.map(([n, desc, long, key]) => (
             <div key={n} className="rounded-lg border bg-background/40 p-3">
-              <div className="flex justify-between"><h3 className="font-display font-semibold">{n}</h3><span className={`text-xs ${up(n) ? "text-ok" : "text-destructive"}`}>{up(n) ? "● disponível" : "○ offline"}</span></div>
+              <div className="flex justify-between"><h3 className="font-display font-semibold">{n}</h3><span className={`text-xs ${up(key) ? "text-ok" : "text-destructive"}`}>{up(key) ? "● disponível" : "○ offline"}</span></div>
               <div className="text-xs text-cyan">{desc}</div>
               <p className="mt-2 text-sm text-muted-foreground">{long}</p>
             </div>

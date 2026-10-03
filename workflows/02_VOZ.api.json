@@ -1,0 +1,37 @@
+{
+ "1": {
+  "class_type": "OwnMovieSceneLoad",
+  "inputs": {
+   "project_name": "projeto_001",
+   "scene_index": 0,
+   "style_prefix": "Vox explainer style, flat editorial collage, paper texture, bold graphic shapes, archival cutouts, clean motion,",
+   "negative_default": "blurry, low quality, distorted, watermark, text artifacts, deformed",
+   "seed_base": 1,
+   "chain_last_frame": false
+  },
+  "_meta": {
+   "title": "OWN · Carregar cena"
+  }
+ },
+ "2": {
+  "class_type": "OwnMovieOmniVoice",
+  "inputs": {
+   "scene": [
+    "1",
+    0
+   ],
+   "backend": "cli",
+   "voice": "default",
+   "language": "pt",
+   "model": "k2-fsa/OmniVoice",
+   "cli_template": "omnivoice-infer --model {model} --text {text} --output {out} --language {lang} {ref_args}",
+   "http_url": "http://127.0.0.1:8001/tts",
+   "python_device": "auto",
+   "keep_loaded": false,
+   "timeout_s": 420
+  },
+  "_meta": {
+   "title": "OWN · OmniVoice"
+  }
+ }
+}

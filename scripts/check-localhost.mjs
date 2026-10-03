@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const need = [
   "config/localhost.json",
-  "api/bridge.mjs",
+  "custom_nodes/OWN_MOVIE/__init__.py",
+  "workflows/02_CENA.api.json",
   "workflows/WAN2.2.json",
   "workflows/WAN2.2.api.json",
   "src/data/WAN2.2.json",
@@ -36,7 +37,6 @@ for (const f of need) {
   if (!ok) fail++;
 }
 for (const [n, u] of [
-  ["bridge", "http://127.0.0.1:8000/api/health"],
   ["comfy", "http://127.0.0.1:8188/system_stats"],
   ["omnivoice", "http://127.0.0.1:8001/"],
   ["omniroute", "http://127.0.0.1:20128/v1/models"],

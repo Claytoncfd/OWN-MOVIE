@@ -12,9 +12,11 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "bridge": "node api/bridge.mjs",
     "localhost": "bash scripts/start-localhost.sh all",
-    "localhost:check": "node scripts/check-localhost.mjs"
+    "localhost:check": "node scripts/check-localhost.mjs",
+    "workflows": "python3 scripts/build-workflows.py",
+    "test:nodes": "python3 -m pytest tests/nodes -q",
+    "install:nodes": "bash scripts/install-nodes.sh"
   },
   "overrides": {
     "rolldown": "1.2.1"

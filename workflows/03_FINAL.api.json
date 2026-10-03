@@ -1,0 +1,11 @@
+{
+ "1": {
+  "class_type": "OwnMovieFinalConcat",
+  "inputs": {
+   "project_name": "projeto_001"
+  },
+  "_meta": {
+   "title": "Filme final"
+  }
+ }
+}
