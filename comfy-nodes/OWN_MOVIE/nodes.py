@@ -89,13 +89,34 @@ class OwnMovieExcerpt:
         return (value,)
 
 
+MODEL_FALLBACKS = ["auto", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"]
+
+
+def _router_models(base_url, key, timeout=10):
+    """Lista viva de modelos do OmniRoute p/ o dropdown (sempre inclui auto)."""
+    try:
+        req = urllib.request.Request(base_url.rstrip("/") + "/models",
+                                     headers={"Authorization": f"Bearer {key}"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            ids = [m["id"] for m in json.loads(r.read()).get("data", []) if m.get("id")]
+        seen = []
+        for m in ["auto"] + ids + MODEL_FALLBACKS:
+            if m not in seen:
+                seen.append(m)
+        return seen
+    except Exception as e:
+        print(f"[OWN MOVIE] /v1/models falhou ({e}), usando fallbacks")
+        return list(MODEL_FALLBACKS)
+
+
 class OwnMovieOmniRoute:
     @classmethod
     def INPUT_TYPES(cls):
+        models = _router_models("http://127.0.0.1:20128/v1", _omni_key())
         return {"required": {
             "prompt": ("STRING", {"multiline": True}),
             "system": ("STRING", {"multiline": True, "default": "Você é um agente do OWN MOVIE. Responda de forma curta e direta."}),
-            "model": ("STRING", {"default": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"}),
+            "model": (models,),
             "base_url": ("STRING", {"default": "http://127.0.0.1:20128/v1"}),
             "max_tokens": ("INT", {"default": 800, "min": 16, "max": 8000}),
         }, "optional": {
@@ -103,8 +124,8 @@ class OwnMovieOmniRoute:
             "ollama_model": ("STRING", {"default": "qwen-heretic:latest"}),
         }}
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("text",)
+    RETURN_TYPES = ("STRING", "STRING")
+    RETURN_NAMES = ("text", "model_usado")
     FUNCTION = "run"
     CATEGORY = "OWN MOVIE"
 
@@ -112,9 +133,17 @@ class OwnMovieOmniRoute:
         key = _omni_key()
         if not key:
             raise RuntimeError("OwnMovieOmniRoute: sem chave (OMNIROUTE_API_KEY ou ~/.hermes/config.yaml)")
-        if use_fallback:
-            return (_chat_auto(base_url, key, model, system, prompt, max_tokens, ollama_model=ollama_model),)
-        return (_chat(base_url, key, model, system, prompt, max_tokens),)
+        used = model
+        try:
+            text = _chat(base_url, key, model, system, prompt, max_tokens)
+        except Exception as e:
+            if not use_fallback:
+                raise
+            print(f"[OWN MOVIE] OmniRoute falhou ({e}), fallback Ollama local")
+            text = _chat_ollama(ollama_model, system, prompt)
+            used = f"ollama/{ollama_model}"
+        print(f"[OWN MOVIE] modelo usado: {used}")
+        return (text, used)
 
 
 EMOTION_SYSTEM = (
@@ -147,14 +176,18 @@ class OwnMovieEmotion:
         key = _omni_key()
         if not key:
             raise RuntimeError("OwnMovieEmotion: sem chave (OMNIROUTE_API_KEY ou ~/.hermes/config.yaml)")
-        if use_fallback:
-            emo = _chat_auto(base_url, key, model, EMOTION_SYSTEM, narration,
-                             max_tokens=1200, ollama_model=ollama_model).strip()
-        else:
+        used = model
+        try:
             emo = _chat(base_url, key, model, EMOTION_SYSTEM, narration, max_tokens=1200).strip()
-        meta = {"pauses": emo.count("..."), "questions": emo.count("?"),
+        except Exception as e:
+            if not use_fallback:
+                raise
+            print(f"[OWN MOVIE] OmniRoute falhou ({e}), fallback Ollama local")
+            emo = _chat_ollama(ollama_model, EMOTION_SYSTEM, narration).strip()
+            used = f"ollama/{ollama_model}"
+        meta = {"model_usado": used, "pauses": emo.count("..."), "questions": emo.count("?"),
                 "exclaims": emo.count("!"), "marks": sorted({m for m in ("laughter", "sigh", "pause", "gasp") if m in emo})}
-        print(f"[OWN MOVIE] emoção aplicada: {json.dumps(meta, ensure_ascii=False)}")
+        print(f"[OWN MOVIE] emoção aplicada por {used}: {json.dumps({k: v for k, v in meta.items() if k != 'model_usado'}, ensure_ascii=False)}")
         return (emo, json.dumps(meta, ensure_ascii=False))
 
 
