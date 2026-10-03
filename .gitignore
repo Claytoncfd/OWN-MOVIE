@@ -2,6 +2,8 @@
 node_modules/
 dist/
 build/
+.output/
+.wrangler/
 .next/
 coverage/
 *.tsbuildinfo
