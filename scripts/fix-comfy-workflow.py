@@ -17,12 +17,12 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "opensource/ComfyUI-Wan2.2-workflow-main/WAN2.2.json"
 COMFY = ROOT / "opensource/comfyui"
 
-# node_id -> (pastas candidatas no ComfyUI, nome de arquivo local correto)
+# node_id -> (pastas candidatas no ComfyUI, caminho local com subpasta)
 FIXES = {
-    2: (["models/unet", "models/diffusion_models"], "wan2.2-rapid-mega-aio-nsfw-v12.1-Q4_K.gguf"),
-    4: (["models/clip", "models/text_encoders"], "umt5-xxl-encoder-Q3_K_S.gguf"),
-    6: (["models/vae"], "wan_2.1_vae.safetensors"),
-    92: (["models/loras"], "DR34ML4Y_I2V_14B_LOW_V2.safetensors"),
+    2: (["models"], "OWN_MOVIE/wan2.2-rapid-mega-aio-nsfw-v12.1-Q4_K.gguf"),
+    4: (["models"], "OWN_MOVIE/umt5-xxl-encoder-Q3_K_S.gguf"),
+    6: (["models"], "OWN_MOVIE/wan_2.1_vae.safetensors"),
+    92: (["models"], "OWN_MOVIE/DR34ML4Y_I2V_14B_LOW_V2.safetensors"),
 }
 DESTS = [
     ROOT / "workflows/WAN2.2.json",

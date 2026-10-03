@@ -1,20 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { AppShell, Panel } from "@/components/AppShell";
-import { Button } from "@/components/ui/button";
-import { stats, realValues } from "@/lib/workflow";
-import { useLogs } from "@/lib/logs";
-import { AGENTS, LogView } from "@/components/LogView";
-import { useProject } from "@/lib/pipeline";
 import { useSettings } from "@/lib/settings";
-import { useStudioTab } from "@/lib/ui-tabs";
-import { hideComfyFrame, readCounts, showComfyFrame } from "@/lib/comfy-frame";
+import { hideComfyFrame, setComfyHeight, showComfyFrame } from "@/lib/comfy-frame";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "ComfyUI WAN2.2 — OWN MOVIE" },
-      { name: "description", content: "Canvas real do workflow WAN2.2 do ComfyUI: 55 nodes, 37 links, 11 grupos, integrado aos agentes do OWN MOVIE." },
+      { name: "description", content: "ComfyUI nativo com o workflow WAN2.2 do OWN MOVIE." },
       { property: "og:title", content: "ComfyUI WAN2.2 — OWN MOVIE" },
       { property: "og:description", content: "Workflow real do ComfyUI dentro da plataforma OWN MOVIE." },
       { property: "og:type", content: "website" },
@@ -25,87 +19,45 @@ export const Route = createFileRoute("/")({
 });
 
 function Studio() {
-  const tab = useStudioTab();
-  const logs = useLogs();
-  const project = useProject();
   const s = useSettings();
-  const last = [...project.scenes].reverse().find((x) => x.videoUrl);
   const slotRef = useRef<HTMLDivElement>(null);
-  const [boots, setBoots] = useState({ app: 0, frame: 0 });
-
-  useEffect(() => {
-    setBoots(readCounts());
-    const t = setInterval(() => setBoots(readCounts()), 1000);
-    return () => clearInterval(t);
-  }, []);
 
   // O iframe é único e persistente: só muda de lugar, nunca recarrega.
   useEffect(() => {
-    if (tab === "Workflow" && slotRef.current) showComfyFrame(slotRef.current, s.comfyUrl);
-    else hideComfyFrame();
+    if (slotRef.current) showComfyFrame(slotRef.current, s.comfyUrl);
     return () => hideComfyFrame();
-  }, [tab, s.comfyUrl]);
+  }, [s.comfyUrl]);
+
+  function onGripDown(e: React.MouseEvent) {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = slotRef.current?.offsetHeight ?? 500;
+    const move = (m: MouseEvent) => {
+      const h = Math.max(300, startH + (m.clientY - startY));
+      const f = slotRef.current?.querySelector("iframe");
+      if (f) (f as HTMLIFrameElement).style.height = `${h}px`;
+    };
+    const up = (m: MouseEvent) => {
+      setComfyHeight(Math.max(300, startH + (m.clientY - startY)));
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  }
 
   return (
     <AppShell>
       <Panel>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="font-mono text-xs text-muted-foreground">{stats.nodes} nodes · {stats.links} links · {stats.groups} grupos · {stats.subgraphs} subgraphs</span>
-        </div>
-        <div className="mt-3">
-          <div className={tab === "Workflow" ? "" : "hidden"}>
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
-              <span className="font-mono text-xs text-muted-foreground">{s.comfyUrl}</span>
-              <span className="font-mono text-[10px] text-muted-foreground">app #{boots.app} · quadro #{boots.frame}</span>
-            </div>
-            <div ref={slotRef} className="min-h-[480px]" />
-          </div>
-          <div className={tab === "Modelo" ? "" : "hidden"}>
-            <div className="grid gap-2 font-mono text-sm md:grid-cols-2">
-              {Object.entries(realValues).map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 rounded border px-3 py-2"><span className="text-muted-foreground">{k}</span><span className="truncate">{String(v)}</span></div>
-              ))}
-            </div>
-          </div>
-          <div className={tab === "Configurações" ? "" : "hidden"}>
-            <div className="space-y-2 text-sm">
-              <p>Workflow API: {s.apiWorkflow ? <span className="text-ok">carregado ({(s.apiWorkflow.length / 1024).toFixed(0)} KB)</span> : <span className="text-warn">não carregado</span>}</p>
-              <p className="text-muted-foreground">No ComfyUI, abra o WAN2.2.json e use “Export (API)”. Carregue o arquivo aqui ou em Configurações.</p>
-              <Button variant="outline" asChild><Link to="/configuracoes">Abrir configurações</Link></Button>
-            </div>
-          </div>
-          <div className={tab === "Logs" ? "" : "hidden"}><LogView lines={logs} /></div>
+        <div ref={slotRef} className="min-h-[480px]" />
+        <div
+          onMouseDown={onGripDown}
+          title="Arrastar para redimensionar"
+          className="mt-1 flex h-4 cursor-ns-resize items-center justify-center rounded-md border border-dashed text-muted-foreground hover:bg-accent"
+        >
+          <div className="h-1 w-16 rounded-full bg-muted-foreground/40" />
         </div>
       </Panel>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-4">
-        <Panel title="Agentes IA">
-          <div className="grid grid-cols-2 gap-2">
-            {AGENTS.map(([n, d]) => (
-              <div key={n} className="rounded-md bg-background/50 p-2"><div className="text-sm font-semibold">{n}</div><div className="text-xs text-muted-foreground">{d}</div></div>
-            ))}
-          </div>
-        </Panel>
-        <Panel title="Ferramentas e modelos">
-          <ul className="space-y-1.5 text-sm text-foreground/80">
-            <li>ComfyUI · Wan 2.2 GGUF</li><li>OmniVoice (TTS)</li><li>LLM local via OmniRoute</li><li>Player VOX / export no navegador</li>
-          </ul>
-          <h3 className="panel-title mb-2 mt-4">Projetos</h3>
-          <p className="text-sm text-foreground/80">{project.name} · {project.scenes.length} cenas</p>
-          <Button className="mt-3 w-full" asChild><Link to="/projetos">Novo projeto</Link></Button>
-        </Panel>
-        <Panel title="Preview / Saída">
-          <div className="flex aspect-video items-center justify-center overflow-hidden rounded-md border border-dashed text-center text-sm text-muted-foreground">
-            {last?.videoUrl ? <video src={last.videoUrl} controls loop className="h-full" /> : "[Preview do MP4 gerado]\nWan/Video_00001.mp4"}
-          </div>
-          <Button variant="outline" className="mt-3 w-full" asChild><Link to="/projetos">Abrir Player VOX</Link></Button>
-        </Panel>
-        <Panel title="Informações do workflow">
-          {[["Arquivo", "WAN2.2.json"], ["Formato", `ComfyUI ${stats.format}`], ["Frontend", stats.frontend], ["Modos", "t2v · i2v"], ["API export", "workflows/WAN2.2.api.json"], ["Subgraphs", String(stats.subgraphs)], ["Sampler", `${realValues.sampler} / ${realValues.scheduler}`], ["Steps / CFG", `${realValues.steps} / ${realValues.cfg}`]].map(([k, v]) => (
-            <div key={k} className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">{k}</span><span className="font-mono">{v}</span></div>
-          ))}
-        </Panel>
-      </div>
     </AppShell>
   );
 }

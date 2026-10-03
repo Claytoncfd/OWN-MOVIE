@@ -1,18 +1,15 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { systemStats } from "@/lib/comfy";
 import { useSettings } from "@/lib/settings";
-import { STUDIO_TABS, setStudioTab, useStudioTab } from "@/lib/ui-tabs";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/projetos", label: "Projetos" },
-  { to: "/agentes", label: "Agentes IA" },
-  { to: "/", label: "ComfyUI" },
   { to: "/omnivoice", label: "OmniVoice" },
-  { to: "/modelos", label: "Modelos" },
+  { to: "/", label: "ComfyUI" },
   { to: "/arquivos", label: "Arquivos" },
   { to: "/configuracoes", label: "Configurações" },
 ] as const;
@@ -40,8 +37,6 @@ function Chip({ label, value }: { label: string; value: string }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const hw = useHardware();
-  const studioTab = useStudioTab();
-  const pathname = useRouterState({ select: (r) => r.location.pathname });
   const dev = hw.data?.devices?.[0];
   const sys = hw.data?.system;
   return (
@@ -63,19 +58,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        {pathname === "/" && (
-          <div className="flex items-center gap-1 border-l pl-4">
-            {STUDIO_TABS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setStudioTab(t)}
-                className={`rounded-md px-3 py-2 text-sm ${studioTab === t ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        )}
         <div className="ml-auto flex items-center gap-2">
           <Chip
             label="GPU · VRAM"

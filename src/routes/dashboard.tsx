@@ -4,6 +4,14 @@ import { AppShell, Panel, useHardware } from "@/components/AppShell";
 import { queueInfo } from "@/lib/comfy";
 import { useProject } from "@/lib/pipeline";
 import { useSettings } from "@/lib/settings";
+import { AGENTS } from "@/components/LogView";
+import { realValues } from "@/lib/workflow";
+
+const PROFILES = [
+  ["6 GB", "Q3_K", "Q3_K_M", "16 GB", "~4,6 min por 1 s (RTX 3050)"],
+  ["8 GB", "Q4_K", "Q3_K_M", "32 GB", "Balanceado"],
+  ["10 GB+", "Q5_K", "Q4_K_M", "32 GB+", "Mais qualidade"],
+];
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -34,6 +42,26 @@ function Dashboard() {
   const s = useSettings();
   const q = useQuery({ queryKey: ["queue", s.comfyUrl], queryFn: queueInfo, refetchInterval: 3000, retry: false });
   const p = useProject();
+  const health = useQuery({
+    queryKey: ["bridge-health"],
+    queryFn: async () => {
+      const r = await fetch("http://127.0.0.1:8000/api/health");
+      if (!r.ok) throw new Error("bridge offline");
+      const j = await r.json();
+      return {
+        OmniRoute: !!j.omniroute?.online,
+        OmniVoice: !!j.omnivoice?.online,
+        ComfyUI: !!j.comfy?.online,
+      } as Record<string, boolean>;
+    },
+    refetchInterval: 8000,
+    retry: false,
+  });
+  const up = (n: string) =>
+    n === "OmniRoute" ? health.data?.OmniRoute
+    : n === "OmniVoice" ? health.data?.OmniVoice
+    : n === "Hermes Agent" ? health.data?.OmniRoute
+    : true;
   const d = hw.data?.devices?.[0];
   const G = 1024 ** 3;
   return (
@@ -46,6 +74,30 @@ function Dashboard() {
         <Panel title="Fila GPU (ComfyUI)"><div className="font-mono text-3xl">{q.data ? `${q.data.running} / ${q.data.pending}` : "—"}</div><div className="text-xs text-muted-foreground">executando / pendentes</div></Panel>
         <Panel title="Projeto ativo"><div className="text-lg">{p.name}</div><div className="text-xs text-muted-foreground">{p.scenes.filter((x) => x.videoUrl).length}/{p.scenes.length} cenas renderizadas</div></Panel>
         <Panel title="Sistema"><div className="font-mono text-xs">ComfyUI {hw.data?.system.comfyui_version ?? "—"}<br />Python {hw.data?.system.python_version?.split(" ")[0] ?? "—"}<br />{hw.data?.system.os ?? ""}</div></Panel>
+      </div>
+      <Panel title="Agentes IA" className="mt-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          {AGENTS.map(([n, desc, long]) => (
+            <div key={n} className="rounded-lg border bg-background/40 p-3">
+              <div className="flex justify-between"><h3 className="font-display font-semibold">{n}</h3><span className={`text-xs ${up(n) ? "text-ok" : "text-destructive"}`}>{up(n) ? "● disponível" : "○ offline"}</span></div>
+              <div className="text-xs text-cyan">{desc}</div>
+              <p className="mt-2 text-sm text-muted-foreground">{long}</p>
+            </div>
+          ))}
+        </div>
+      </Panel>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <Panel title="Instalados no workflow">
+          {[["UNet (GGUF) · models/unet", realValues.unet], ["Text encoder · models/clip", realValues.clip], ["VAE · models/vae", realValues.vae], ["ModelSamplingSD3 shift", realValues.shift]].map(([k, v]) => (
+            <div key={String(k)} className="border-b py-2 text-sm last:border-0"><div className="text-muted-foreground">{k}</div><div className="font-mono">{String(v)}</div></div>
+          ))}
+        </Panel>
+        <Panel title="Perfis por VRAM">
+          <table className="w-full text-sm">
+            <thead className="text-left text-muted-foreground"><tr><th>VRAM</th><th>UNet</th><th>Encoder</th><th>RAM</th><th>Obs.</th></tr></thead>
+            <tbody className="font-mono">{PROFILES.map((r) => <tr key={r[0]} className="border-t">{r.map((c) => <td key={c} className="py-2">{c}</td>)}</tr>)}</tbody>
+          </table>
+        </Panel>
       </div>
     </AppShell>
   );

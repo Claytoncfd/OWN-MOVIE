@@ -74,6 +74,7 @@ function setFirst(nodes: ApiNode[], input: string, value: unknown) {
 export type PatchParams = {
   positive: string;
   negative: string;
+  excerpt: string; // narração da cena → nó CENA_EXCERTO (200)
   seed: number;
   seconds: number;
   prefix: string;
@@ -131,6 +132,8 @@ export function patchWorkflow(apiJson: string, p: PatchParams) {
   }
   const prefixPrim = find(wf, "104") ?? byTitle(wf, /filename_prefix/i)[0];
   if (prefixPrim && "value" in prefixPrim.inputs) prefixPrim.inputs.value = p.prefix;
+  const excerptNode = find(wf, "200") ?? byTitle(wf, /CENA_EXCERTO/i)[0];
+  if (excerptNode && "value" in excerptNode.inputs) excerptNode.inputs.value = p.excerpt;
 
   const loadImage = find(wf, "23") ?? byClass(wf, /LoadImage/)[0];
   const modeSwitch = find(wf, "59:44") ?? find(wf, "44") ?? find(wf, "59") ?? byTitle(wf, /t2v|i2v|mode/i)[0];

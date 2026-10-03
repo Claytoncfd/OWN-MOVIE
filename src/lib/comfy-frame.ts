@@ -24,9 +24,10 @@ export function readCounts() {
     return {
       app: Number(localStorage.getItem("ownmovie.appboots") ?? 0),
       frame: Number(localStorage.getItem("ownmovie.frameboots") ?? 0),
+      last: localStorage.getItem("ownmovie.framelast") ?? "—",
     };
   } catch {
-    return { app: 0, frame: 0 };
+    return { app: 0, frame: 0, last: "—" };
   }
 }
 
@@ -37,6 +38,29 @@ export function readCounts() {
 let frame: HTMLIFrameElement | null = null;
 let currentUrl = "";
 let stash: HTMLDivElement | null = null;
+let customH: number | null = null;
+
+function loadCustomH() {
+  try {
+    const v = Number(localStorage.getItem("ownmovie.comfyH") ?? 0);
+    customH = v >= 300 ? v : null;
+  } catch {
+    customH = null;
+  }
+}
+
+export function setComfyHeight(px: number | null) {
+  customH = px && px >= 300 ? Math.round(px) : null;
+  try {
+    if (customH) localStorage.setItem("ownmovie.comfyH", String(customH));
+    else localStorage.removeItem("ownmovie.comfyH");
+  } catch { /* ignore */ }
+  if (frame) frame.style.height = customH ? `${customH}px` : "";
+}
+
+function applyHeight() {
+  if (frame) frame.style.height = customH ? `${customH}px` : "";
+}
 
 export function setFrameStash(el: HTMLDivElement | null) {
   stash = el;
@@ -45,16 +69,23 @@ export function setFrameStash(el: HTMLDivElement | null) {
 
 export function showComfyFrame(slot: HTMLDivElement, url: string) {
   if (typeof document === "undefined") return;
-  if (!frame || currentUrl !== url) {
+  const norm = url.replace(/\/+$/, "");
+  if (customH === null) loadCustomH();
+  if (!frame || currentUrl !== norm) {
+    try {
+      localStorage.setItem("ownmovie.framelast", `${new Date().toLocaleTimeString()} ${currentUrl || "(nenhum)"} -> ${norm}`);
+    } catch { /* ignore */ }
     frame?.remove();
     frame = document.createElement("iframe");
-    frame.src = url;
+    frame.src = norm;
     frame.title = "ComfyUI nativo";
-    frame.className = "h-[calc(100vh-220px)] min-h-[480px] w-full rounded-lg border bg-background";
+  frame.className = "h-[calc(100vh-200px)] min-h-[500px] w-full rounded-lg border bg-background";
     frame.addEventListener("load", () => frameLoadCount());
-    currentUrl = url;
+    currentUrl = norm;
   }
   if (frame.parentElement !== slot) slot.appendChild(frame);
+  frame.className = "h-[calc(100vh-200px)] min-h-[500px] w-full rounded-lg border bg-background";
+  applyHeight();
 }
 
 export function hideComfyFrame() {

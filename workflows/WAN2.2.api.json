@@ -226,13 +226,13 @@
  "2": {
   "class_type": "UnetLoaderGGUF",
   "inputs": {
-   "unet_name": "wan2.2-rapid-mega-aio-nsfw-v12.1-Q4_K.gguf"
+   "unet_name": "OWN_MOVIE/wan2.2-rapid-mega-aio-nsfw-v12.1-Q4_K.gguf"
   }
  },
  "4": {
   "class_type": "CLIPLoaderGGUF",
   "inputs": {
-   "clip_name": "umt5-xxl-encoder-Q3_K_S.gguf",
+   "clip_name": "OWN_MOVIE/umt5-xxl-encoder-Q3_K_S.gguf",
    "type": "wan"
   }
  },
@@ -248,7 +248,7 @@
  "6": {
   "class_type": "VAELoader",
   "inputs": {
-   "vae_name": "wan_2.1_vae.safetensors"
+   "vae_name": "OWN_MOVIE/wan_2.1_vae.safetensors"
   }
  },
  "39": {
@@ -344,7 +344,7 @@
    "toggle": true,
    "mode": "simple",
    "num_loras": 1,
-   "lora_1_name": "DR34ML4Y_I2V_14B_LOW_V2.safetensors",
+   "lora_1_name": "OWN_MOVIE/DR34ML4Y_I2V_14B_LOW_V2.safetensors",
    "lora_1_strength": 0.6,
    "lora_1_model_strength": 1,
    "lora_1_clip_strength": 1,
@@ -532,6 +532,12 @@
     "7",
     5
    ]
+  }
+ },
+ "200": {
+  "class_type": "OwnMovieExcerpt",
+  "inputs": {
+   "value": ""
   }
  },
  "138:128": {

@@ -100,6 +100,7 @@ export async function runPipeline() {
       const wf = patchWorkflow(s.apiWorkflow, {
         positive: `${s.stylePrefix} ${sc.prompt}`.trim(),
         negative: s.negative,
+        excerpt: sc.narration,
         seed: Math.floor(Math.random() * 1e15),
         seconds,
         prefix: `OwnMovie/${getProject().name.replace(/\W+/g, "_")}_c${i + 1}`,

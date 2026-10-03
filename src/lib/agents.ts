@@ -83,20 +83,25 @@ export async function synthesize(text: string): Promise<{ url: string; blob: Blo
   const s = getSettings();
   const body = JSON.stringify({ text, voice: s.voiceName, language: s.voiceLang });
   let r: Response;
+  async function viaBridge(): Promise<Response> {
+    return fetch("http://127.0.0.1:8000/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+  }
   try {
     r = await fetch(s.voiceUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body,
     });
+    // Demo Gradio (:8001) não expõe POST /tts → cai para o bridge (CLI real).
+    if (r.status === 404) r = await viaBridge();
   } catch {
     // Queda de rede/CORS → tenta o bridge real (:8000 → OmniVoice)
     try {
-      r = await fetch("http://127.0.0.1:8000/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body,
-      });
+      r = await viaBridge();
     } catch {
       throw new Error("OmniVoice offline. Suba com: bash scripts/start-localhost.sh voice  (omnivoice-demo --ip 127.0.0.1 --port 8001)");
     }

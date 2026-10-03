@@ -139,6 +139,8 @@ def main():
             log(f"cena {i+1}: last frame reenviado ({img})")
         wf["12"]["inputs"]["text"] = f"{STYLE} {prompt}".strip()
         wf["127"]["inputs"]["text"] = NEG
+        if "200" in wf:
+            wf["200"]["inputs"]["value"] = narr
         wf["7"]["inputs"].update({"seed": random.randint(0, 10**15), "steps": STEPS, "cfg": CFG})
         wf["74:64"]["inputs"]["value"] = W
         wf["74:65"]["inputs"]["value"] = H

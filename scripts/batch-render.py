@@ -161,6 +161,8 @@ def main():
             img = (up.get("subfolder") + "/" if up.get("subfolder") else "") + up["name"]
         wf["12"]["inputs"]["text"] = f"{STYLE} {scenes[i]['prompt']}".strip()
         wf["127"]["inputs"]["text"] = NEG
+        if "200" in wf:
+            wf["200"]["inputs"]["value"] = scenes[i]["narration"]
         wf["7"]["inputs"].update({"seed": random.randint(0, 10**15), "steps": STEPS, "cfg": CFG})
         wf["74:64"]["inputs"]["value"] = W
         wf["74:65"]["inputs"]["value"] = H
