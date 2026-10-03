@@ -286,7 +286,7 @@ def _validate(api):
     print(f"ComfyUI ACEITOU o prompt ({pid[:8]}...) — interrompendo antes de executar")
     urllib.request.urlopen(urllib.request.Request(f"{COMFY}/interrupt", data=b"{}", headers={"Content-Type": "application/json"}), timeout=30)
     urllib.request.urlopen(urllib.request.Request(f"{COMFY}/queue", data=b'{"clear": true}', headers={"Content-Type": "application/json"}), timeout=30)
-    print("Fila limpa. Export válido de verdade.")
+    print("Fila limpa. Export validado pelo servidor.")
 
 
 if __name__ == "__main__":

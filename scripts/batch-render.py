@@ -8,7 +8,7 @@ Distribuição real por estágio (não dá para fatiar 1 step de difusão entre 
 
 Uso:
   python3 scripts/batch-render.py --project NOME            # dry-run (padrão): estima tudo, não renderiza
-  python3 scripts/batch-render.py --project NOME --go       # executa de verdade (pode levar dias: ~2.2min por segundo de vídeo)
+  python3 scripts/batch-render.py --project NOME --go       # executa (pode levar dias: ~2.2min por segundo de vídeo)
   python3 scripts/batch-render.py --project NOME --go --ep 20  # episódios de 20 cenas
 Retoma sozinho de onde parou (pula cena com MP4 pronto). Log: logs/batch-NOME.log
 """

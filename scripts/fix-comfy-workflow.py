@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OWN MOVIE — registra o workflow Wan 2.2 no ComfyUI de verdade.
+"""OWN MOVIE — registra o workflow Wan 2.2 no ComfyUI.
 
 1. Lê a fonte canônica (nunca modificada): opensource/ComfyUI-Wan2.2-workflow-main/WAN2.2.json
 2. Corrige os caminhos de modelo do Windows do autor para os arquivos locais reais.
