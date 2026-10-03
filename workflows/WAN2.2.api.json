@@ -480,6 +480,10 @@
      "fullpath": "C:\\AI\\ComfyUI_outputs\\Wan\\Video_00009.mp4"
     }
    },
+   "audio": [
+    "202",
+    0
+   ],
    "images": [
     "7",
     5
@@ -538,6 +542,28 @@
   "class_type": "OwnMovieExcerpt",
   "inputs": {
    "value": ""
+  }
+ },
+ "201": {
+  "class_type": "OwnMovieEmotion",
+  "inputs": {
+   "narration": [
+    "200",
+    0
+   ],
+   "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+   "base_url": "http://127.0.0.1:20128/v1"
+  }
+ },
+ "202": {
+  "class_type": "OwnMovieTTS",
+  "inputs": {
+   "text": [
+    "201",
+    0
+   ],
+   "language": "pt",
+   "device": "auto"
   }
  },
  "138:128": {
