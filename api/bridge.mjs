@@ -115,6 +115,41 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
+  // ---- Projetos no servidor: POST /api/project (salva), GET /api/projects, GET /api/project/:name ----
+  const PROJECTS = resolve(ROOT, "projects");
+  const safeName = (n) => (typeof n === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(n) ? n : null);
+  if (req.method === "POST" && u.pathname === "/api/project") {
+    const body = await readBody(req);
+    try {
+      const j = JSON.parse(body.toString("utf8"));
+      const name = safeName(j.name);
+      if (!name || typeof j.text !== "string") return json(res, 400, { error: "name (a-z0-9_-) e text obrigatórios" });
+      const dir = resolve(PROJECTS, name);
+      if (!dir.startsWith(PROJECTS)) return json(res, 400, { error: "nome inválido" });
+      const { mkdirSync, writeFileSync } = await import("node:fs");
+      mkdirSync(dir, { recursive: true });
+      const doc = { name, text: j.text, scenes: Array.isArray(j.scenes) ? j.scenes : [], savedAt: new Date().toISOString() };
+      writeFileSync(join(dir, "project.json"), JSON.stringify(doc));
+      return json(res, 200, { ok: true, name, scenes: doc.scenes.length, chars: j.text.length });
+    } catch {
+      return json(res, 400, { error: "JSON inválido" });
+    }
+  }
+  if (req.method === "GET" && u.pathname === "/api/projects") {
+    const { readdirSync } = await import("node:fs");
+    const names = readdirSync(PROJECTS, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+    return json(res, 200, { ok: true, projects: names });
+  }
+  if (req.method === "GET" && u.pathname.startsWith("/api/project/")) {
+    const name = safeName(decodeURIComponent(u.pathname.slice("/api/project/".length)));
+    const p = name && resolve(PROJECTS, name, "project.json");
+    if (!p || !p.startsWith(PROJECTS) || !existsSync(p)) return json(res, 404, { error: "projeto não encontrado" });
+    cors(res);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(readFileSync(p));
+    return;
+  }
+
   // ---- GET /api/workflow-api — export API local gerado por scripts/export-api-format.py ----
   if (req.method === "GET" && u.pathname === "/api/workflow-api") {
     const p = resolve(ROOT, "workflows/WAN2.2.api.json");

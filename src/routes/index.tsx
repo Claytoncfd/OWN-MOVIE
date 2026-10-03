@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { AppShell, Panel } from "@/components/AppShell";
-import { WorkflowCanvas } from "@/components/WorkflowCanvas";
 import { Button } from "@/components/ui/button";
 import { stats, realValues } from "@/lib/workflow";
 import { useLogs } from "@/lib/logs";
@@ -8,6 +8,7 @@ import { AGENTS, LogView } from "@/components/LogView";
 import { useProject } from "@/lib/pipeline";
 import { useSettings } from "@/lib/settings";
 import { useStudioTab } from "@/lib/ui-tabs";
+import { hideComfyFrame, readCounts, showComfyFrame } from "@/lib/comfy-frame";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,6 +30,21 @@ function Studio() {
   const project = useProject();
   const s = useSettings();
   const last = [...project.scenes].reverse().find((x) => x.videoUrl);
+  const slotRef = useRef<HTMLDivElement>(null);
+  const [boots, setBoots] = useState({ app: 0, frame: 0 });
+
+  useEffect(() => {
+    setBoots(readCounts());
+    const t = setInterval(() => setBoots(readCounts()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // O iframe é único e persistente: só muda de lugar, nunca recarrega.
+  useEffect(() => {
+    if (tab === "Workflow" && slotRef.current) showComfyFrame(slotRef.current, s.comfyUrl);
+    else hideComfyFrame();
+    return () => hideComfyFrame();
+  }, [tab, s.comfyUrl]);
 
   return (
     <AppShell>
@@ -37,22 +53,28 @@ function Studio() {
           <span className="font-mono text-xs text-muted-foreground">{stats.nodes} nodes · {stats.links} links · {stats.groups} grupos · {stats.subgraphs} subgraphs</span>
         </div>
         <div className="mt-3">
-          {tab === "Workflow" && <WorkflowCanvas />}
-          {tab === "Modelo" && (
+          <div className={tab === "Workflow" ? "" : "hidden"}>
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-mono text-xs text-muted-foreground">{s.comfyUrl}</span>
+              <span className="font-mono text-[10px] text-muted-foreground">app #{boots.app} · quadro #{boots.frame}</span>
+            </div>
+            <div ref={slotRef} className="min-h-[480px]" />
+          </div>
+          <div className={tab === "Modelo" ? "" : "hidden"}>
             <div className="grid gap-2 font-mono text-sm md:grid-cols-2">
               {Object.entries(realValues).map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 rounded border px-3 py-2"><span className="text-muted-foreground">{k}</span><span className="truncate">{String(v)}</span></div>
               ))}
             </div>
-          )}
-          {tab === "Configurações" && (
+          </div>
+          <div className={tab === "Configurações" ? "" : "hidden"}>
             <div className="space-y-2 text-sm">
               <p>Workflow API: {s.apiWorkflow ? <span className="text-ok">carregado ({(s.apiWorkflow.length / 1024).toFixed(0)} KB)</span> : <span className="text-warn">não carregado</span>}</p>
               <p className="text-muted-foreground">No ComfyUI, abra o WAN2.2.json e use “Export (API)”. Carregue o arquivo aqui ou em Configurações.</p>
               <Button variant="outline" asChild><Link to="/configuracoes">Abrir configurações</Link></Button>
             </div>
-          )}
-          {tab === "Logs" && <LogView lines={logs} />}
+          </div>
+          <div className={tab === "Logs" ? "" : "hidden"}><LogView lines={logs} /></div>
         </div>
       </Panel>
 

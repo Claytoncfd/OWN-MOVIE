@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { systemStats } from "@/lib/comfy";
-import { setSettings, useSettings } from "@/lib/settings";
+import { useSettings } from "@/lib/settings";
 import { STUDIO_TABS, setStudioTab, useStudioTab } from "@/lib/ui-tabs";
 import { Button } from "@/components/ui/button";
 
@@ -40,18 +40,10 @@ function Chip({ label, value }: { label: string; value: string }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const hw = useHardware();
-  const s = useSettings();
   const studioTab = useStudioTab();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const dev = hw.data?.devices?.[0];
   const sys = hw.data?.system;
-
-  function loadWorkflowFile() {
-    const i = document.createElement("input");
-    i.type = "file"; i.accept = ".json";
-    i.onchange = async () => { const f = i.files?.[0]; if (f) setSettings({ apiWorkflow: await f.text() }); };
-    i.click();
-  }
   return (
     <div className="min-h-screen">
       <header className="flex flex-wrap items-center gap-6 border-b px-4 py-3">
@@ -96,8 +88,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Chip label="CPU" value={dev ? (dev.name.split(":")[0] ?? "").slice(0, 14) : "—"} />
           <Chip label="ComfyUI" value={hw.isSuccess ? "● online" : "○ offline"} />
           <span className="mx-1 h-6 w-px bg-border" aria-hidden />
-          <Button size="sm" variant="outline" onClick={loadWorkflowFile}>Carregar</Button>
-          <Button size="sm" variant="outline" asChild><a href={`data:application/json,${encodeURIComponent(s.apiWorkflow || "{}")}`} download="WAN2.2.api.json">Salvar</a></Button>
           <Button size="sm" asChild><Link to="/projetos">Executar</Link></Button>
         </div>
       </header>

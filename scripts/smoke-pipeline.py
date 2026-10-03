@@ -87,17 +87,18 @@ def comfy(wf, prefix):
         if h.get("status", {}).get("status_str") == "error":
             raise RuntimeError("ComfyUI erro na execução")
         if h.get("outputs"):
+            video = lastFrame = None
             for nid, o in h["outputs"].items():
                 vids = o.get("gifs") or o.get("videos")
-                if vids:
+                if vids and not video:
                     v = vids[0]
                     q = f"filename={v['filename']}&subfolder={v.get('subfolder','')}&type={v.get('type','output')}"
                     with urllib.request.urlopen(f"{COMFY}/view?{q}", timeout=120) as r:
-                        mp4 = r.read()
-                    last = None
-                    if str(nid).endswith("82") and o.get("images"):
-                        last = o["images"][0]
-                    return mp4, last, int(time.time() - t0)
+                        video = r.read()
+                if str(nid).endswith("82") and o.get("images") and not lastFrame:
+                    lastFrame = o["images"][0]
+            if video:
+                return video, lastFrame, int(time.time() - t0)
 
 
 def view_blob(f):

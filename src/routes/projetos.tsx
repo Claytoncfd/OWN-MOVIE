@@ -32,6 +32,27 @@ function Projetos() {
   const s = useSettings();
   const logs = useLogs();
   const [planning, setPlanning] = useState(false);
+  const [saved, setSaved] = useState("");
+
+  async function saveServer() {
+    setSaved("salvando…");
+    try {
+      const r = await fetch("http://127.0.0.1:8000/api/project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: p.name.replace(/\W+/g, "_").slice(0, 64) || "projeto",
+          text: p.text,
+          scenes: p.scenes.map((s) => ({ narration: s.narration, prompt: s.prompt })),
+        }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+      setSaved(`salvo no servidor: ${j.scenes} cenas`);
+    } catch (e) {
+      setSaved(`falhou: ${(e as Error).message} (bridge :8000 no ar?)`);
+    }
+  }
 
   return (
     <AppShell>
@@ -85,9 +106,11 @@ function Projetos() {
               ))}
             </div>
             {p.scenes.length > 0 && (
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Button onClick={runPipeline} disabled={p.running}>{p.running ? "Executando…" : "Executar: áudio → vídeo"}</Button>
                 {p.running && <Button variant="destructive" onClick={stopPipeline}>Cancelar</Button>}
+                <Button variant="outline" onClick={saveServer}>Salvar no servidor</Button>
+                {saved && <span className="font-mono text-xs text-muted-foreground">{saved}</span>}
               </div>
             )}
           </Panel>

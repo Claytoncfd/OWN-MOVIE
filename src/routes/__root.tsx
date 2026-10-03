@@ -8,10 +8,11 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { appBootCount, setFrameStash } from "../lib/comfy-frame";
 
 function NotFoundComponent() {
   return (
@@ -115,9 +116,18 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [booted] = useState(() => (typeof window === "undefined" ? false : (appBootCount(), true)));
 
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Esconderijo do iframe persistente do ComfyUI: fora da tela (nunca display:none,
+          para o navegador não pausar o quadro), sempre montado. */}
+      <div
+        ref={setFrameStash}
+        data-booted={booted}
+        aria-hidden
+        style={{ position: "fixed", left: "-10000px", top: 0, width: "1280px", height: "800px", visibility: "hidden", pointerEvents: "none" }}
+      />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
