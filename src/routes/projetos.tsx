@@ -15,7 +15,7 @@ import {
   updateDraft,
   useProject,
 } from "@/lib/pipeline";
-import { updateScene, type ServerScene } from "@/lib/own-movie";
+import { updateScene, listProjects, type ServerScene } from "@/lib/own-movie";
 import { viewUrl } from "@/lib/comfy";
 import { useLogs } from "@/lib/logs";
 import { LogView } from "@/components/LogView";
@@ -146,9 +146,15 @@ function Projetos() {
   const p = useProject();
   const logs = useLogs();
   const busy = isRunning(p);
+  const [known, setKnown] = useState<string[]>([]);
   useEffect(() => {
     void refresh().catch(() => undefined);
   }, [p.name]);
+  useEffect(() => {
+    listProjects()
+      .then((names) => setKnown(names))
+      .catch(() => undefined);
+  }, []);
   const ready = p.scenes.filter((s) => s.clip);
   const pending = p.scenes.filter((s) => !s.has_clip).length;
 
@@ -157,11 +163,27 @@ function Projetos() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="space-y-4">
           <Panel title="1 · Roteiro">
-            <Input
-              value={p.name}
-              onChange={(e) => updateDraft({ name: e.target.value })}
-              className="mb-3"
-            />
+            <div className="mb-3 flex gap-2">
+              <Input
+                value={p.name}
+                onChange={(e) => updateDraft({ name: e.target.value })}
+                placeholder="Nome do projeto"
+                className="flex-1"
+              />
+              <select
+                aria-label="Abrir projeto existente"
+                value=""
+                onChange={(e) => e.target.value && updateDraft({ name: e.target.value })}
+                className="max-w-44 rounded-md border bg-background px-2 text-sm"
+              >
+                <option value="">Abrir…</option>
+                {known.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="mb-2 flex gap-2">
               {(["fragmentos", "unico"] as const).map((m) => (
                 <Button
@@ -203,8 +225,8 @@ function Projetos() {
           <Panel title={`2 · Cenas (${p.scenes.length})`}>
             {p.scenes.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Nenhuma cena ainda. Gere o plano acima, ou escolha um projeto já
-                existente pelo nome.
+                Nenhuma cena ainda. Gere o plano acima ou abra um projeto em
+                “Abrir…”.
               </p>
             )}
             <div className="space-y-3">
