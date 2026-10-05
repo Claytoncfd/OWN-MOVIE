@@ -34,3 +34,7 @@ output/renders/*
 !output/audio/.gitkeep
 !output/images/.gitkeep
 !output/renders/.gitkeep
+
+# Pacotes/zips locais — nunca commitar
+*.zip
+__pycache__/
